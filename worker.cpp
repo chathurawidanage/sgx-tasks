@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 
 #include "messages.hpp"
 #include "zmq.hpp"
@@ -6,6 +7,7 @@
 class Worker {
    private:
     std::string COMMAND_EXE = "EXE";
+    std::string SPACE = " ";
     zmq::socket_t *socket;
     const std::string &id;
 
@@ -19,6 +21,7 @@ class Worker {
     }
 
     void send(const std::string &msg) {
+        std::cout << "Sending message : " << msg << std::endl;
         zmq::message_t message(msg.size());
         std::memcpy(message.data(), msg.data(), msg.size());
         socket->send(message, zmq::send_flags::none);
@@ -41,7 +44,10 @@ class Worker {
             return 500;
         }
 
-        send(tasker::GetCommand(tasker::JOIN) + " " + this->id);
+        std::string cmd = tasker::GetCommand(tasker::JOIN);
+        cmd.append(SPACE);
+        cmd.append(this->id);
+        send(cmd);
 
         while (true) {
             zmq::message_t request;
@@ -61,7 +67,13 @@ class Worker {
             } else {
                 std::cout << "Unknown message : " << msg << std::endl;
             }
-            send("RSP " + std::to_string(status));
+
+            cmd = tasker::GetCommand(tasker::RESPONSE);
+            cmd.append(SPACE);
+            cmd.append(this->id);
+            cmd.append(SPACE);
+            cmd.append(std::to_string(status));
+            send(cmd);
         }
         return 0;
     }

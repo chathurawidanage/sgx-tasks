@@ -9,23 +9,37 @@ namespace tasker {
 
 class Worker {
    private:
-    zmq::messagef_t route_message;
+    const std::string id;
     zmq::socket_t *socket;
 
-   public:
-    Worker(zmq::socket_t *socket, zmq::message_t &base_message) : socket(socket) {
-        route_message.move(base_message);
-    }
-
-    void send(std::string &msg) {
-        std::cout << "Sending message " << msg << std::endl;
-        std::cout << "Sent headers. Sending actual message..." << route_message.to_string() << std::endl;
-
-        socket->send(route_message, zmq::send_flags::sndmore);
-
+    void send_str(const std::string &msg, zmq::send_flags flags) {
         zmq::message_t message(msg.size());
         std::memcpy(message.data(), msg.data(), msg.size());
-        socket->send(message, zmq::send_flags::none);
+        socket->send(message, flags);
+    }
+
+   public:
+    Worker(zmq::socket_t *socket, std::string worker_id) : socket(socket), id(worker_id) {
+        std::cout << "Created worker " << this->id << std::endl;
+    }
+
+    void Send(std::string &msg) {
+        std::cout << "Send called... " << std::endl;
+        std::cout << "Sending message to worker " << this->id << std::endl;
+        this->send_str(this->id, zmq::send_flags::sndmore);
+        this->send_str(msg, zmq::send_flags::none);
+    }
+
+    ~Worker() {
+        std::cout << "Delete called..." << std::endl;
+    }
+
+    std::string Id() {
+        return this->id;
+    }
+
+    int No() {
+        return 101;
     }
 };
 
@@ -42,6 +56,7 @@ class Driver {
     void start() {
         zmq::context_t ctx{1};  // 1 IO thread
 
+        // worker-driver communication
         zmq::socket_t socket{ctx, zmq::socket_type::router};
         socket.setsockopt(ZMQ_ROUTER_MANDATORY, 1);
         socket.bind("tcp://*:5555");
@@ -56,20 +71,33 @@ class Driver {
             std::string msg = request.to_string();
 
             std::string cmd = msg.substr(0, 3);
-            std::string params = msg.substr(3, msg.length());
+            std::string params = msg.substr(4, msg.length());
 
             std::cout << "Command : " << cmd << ", Params : " << params << std::endl;
 
             if (tasker::GetCommand(tasker::Commands::JOIN).compare(cmd) == 0) {
                 // check whether a pending join exists
                 // Worker worker(&socket, pending_joins[params]);
-                std::string m = "Hi from server";
-                pending_joins[params]->send(m);
+                std::cout << "No of registered workers :  " << pending_joins.size() << std::endl;
+                std::cout << "Looking or target Id : [" << params << "]" << std::endl;
+
+                std::unordered_map<std::string, Worker *>::iterator it = this->pending_joins.find(params);
+
+                if (it == pending_joins.end()) {
+                    std::cout << "Couldn't find worker " << params << std::endl;
+                } else {
+                    std::string m = "Hi from server";
+                    pending_joins[params]->Send(m);
+                }
+            } else if (tasker::GetCommand(tasker::Commands::RESPONSE).compare(cmd) == 0) {
+                std::cout << "Response received from worker :  " << params << std::endl;
             } else {
+                std::string worker_id = request.to_string();
                 // this could be a pending join
-                std::cout << "Registering the first message..." << std::endl;
-                Worker *worker = new Worker(&socket, request);
-                this->pending_joins.insert(std::make_pair(msg, worker));
+                std::cout << "Registering the first message from [" << worker_id << "]" << std::endl;
+
+                Worker *worker = new Worker(&socket, worker_id);
+                this->pending_joins.insert(std::make_pair(worker_id, worker));
                 std::cout << "Added to pending joins" << std::endl;
             }
         }
