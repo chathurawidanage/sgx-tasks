@@ -15,7 +15,21 @@ find_library(ZeroMQ_LIBRARY
         PATHS ${PC_ZeroMQ_LIBRARY_DIRS})
 
 include_directories(SYSTEM ${ZeroMQ_INCLUDE_DIR})
-add_subdirectory(driver)
-add_subdirectory(worker)
+
+# Driver executable
+set(SOURCE_FILES main.cpp)
+add_executable(
+    driver
+    driver.cpp
+)
+target_link_libraries(driver PUBLIC ${ZeroMQ_LIBRARY})
+
+# Worker executable
+set(SOURCE_FILES main.cpp)
+add_executable(
+    worker
+    worker.cpp
+)
+target_link_libraries(worker PUBLIC ${ZeroMQ_LIBRARY})
 
 
