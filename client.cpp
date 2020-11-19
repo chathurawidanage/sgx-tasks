@@ -1,4 +1,3 @@
-#include <functional>
 #include <iostream>
 #include <string>
 
@@ -6,26 +5,21 @@
 #include "zmq.hpp"
 
 namespace tasker {
-class Worker {
+class Client {
    private:
     std::string SPACE = " ";
     zmq::socket_t *socket;
     const std::string &id;
-    std::function<void(std::string)> on_message;
-
-   public:
-    Worker(const std::string &id) : id(id) {
-    }
-
-    void SetOnMessage(const std::function<void(std::string)> &on_message) {
-        this->on_message = on_message;
-    }
 
     void Send(const std::string &msg) {
         std::cout << "Sending message : " << msg << std::endl;
         zmq::message_t message(msg.size());
         std::memcpy(message.data(), msg.data(), msg.size());
         socket->send(message, zmq::send_flags::none);
+    }
+
+   public:
+    Client(const std::string &id) : id(id) {
     }
 
     int Start() {
@@ -36,7 +30,7 @@ class Worker {
         this->socket->setsockopt(ZMQ_IDENTITY, this->id.c_str(), 7);
 
         std::cout << "Connecting to the driver..." << std::endl;
-        this->socket->connect("tcp://localhost:5050");
+        this->socket->connect("tcp://localhost:5000");
 
         if (socket->connected()) {
             std::cout << "Connected to the server..." << std::endl;
@@ -53,10 +47,14 @@ class Worker {
 
         // now start continuous listening
         while (true) {
+            std::string line;
+            std::getline(std::cin, line);
+            Send(line);
+
             zmq::message_t request;
 
             // receive a request from client
-            std::cout << "Waiting for command.." << std::endl;
+            std::cout << "Waiting for response.." << std::endl;
             socket->recv(request, zmq::recv_flags::none);
 
             std::string msg = request.to_string();
@@ -75,10 +73,7 @@ class Worker {
 }  // namespace tasker
 
 int main(int argc, char *argv[]) {
-    tasker::Worker worker(argv[1]);
-    worker.SetOnMessage([](std::string msg) {
-        std::cout << "Message received from server : " << msg << std::endl;
-    });
-    worker.Start();
+    tasker::Client client("random_client");
+    client.Start();
     return 0;
 }

@@ -4,10 +4,11 @@ namespace tasker {
 enum Commands {
     JOIN,
     EXE,
-    RESPONSE
+    MESSAGE,
+    ACK
 };
 
-static const std::string CommandString[] = {"JIN", "EXE", "RSP"};
+static const std::string CommandString[] = {"JIN", "EXE", "MSG", "ACK"};
 
 const std::string &GetCommand(int enumVal) {
     return CommandString[enumVal];

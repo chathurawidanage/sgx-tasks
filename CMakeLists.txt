@@ -16,20 +16,26 @@ find_library(ZeroMQ_LIBRARY
 
 include_directories(SYSTEM ${ZeroMQ_INCLUDE_DIR})
 
+find_package(Threads)
+
 # Driver executable
-set(SOURCE_FILES main.cpp)
 add_executable(
     driver
     driver.cpp
 )
-target_link_libraries(driver PUBLIC ${ZeroMQ_LIBRARY})
+target_link_libraries(driver PUBLIC ${ZeroMQ_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
 # Worker executable
-set(SOURCE_FILES main.cpp)
 add_executable(
     worker
     worker.cpp
 )
-target_link_libraries(worker PUBLIC ${ZeroMQ_LIBRARY})
+target_link_libraries(worker PUBLIC ${ZeroMQ_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
+# Client executable
+add_executable(
+    client
+    client.cpp
+)
+target_link_libraries(client PUBLIC ${ZeroMQ_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
 
