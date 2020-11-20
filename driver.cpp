@@ -47,19 +47,26 @@ class Worker {
 
 class Driver {
    private:
-    std::function<void(std::string, std::string)> on_worker_joined;
-    std::function<void(std::string, std::string)> on_client_connected;
+    std::function<void(std::string &, std::string &)> on_worker_joined;
+    std::function<void(std::string &, std::string &)> on_client_connected;
 
-    void StartHandler(int32_t port, std::function<void(std::string, std::string)> on_connected) {
+    std::function<void(std::string &, std::string &)> on_worker_msg;
+    std::function<void(std::string &, std::string &)> on_client_msg;
+
+    zmq::socket_t *socket;
+
+    void StartHandler(int32_t port,
+                      const std::function<void(std::string &, std::string &)> &on_connected,
+                      const std::function<void(std::string &, std::string &)> &on_msg) {
         std::unordered_map<std::string, Worker *> pending_joins{};
 
         zmq::context_t ctx{1};  // 1 IO thread
 
         // worker-driver communication
-        zmq::socket_t socket{ctx, zmq::socket_type::router};
-        socket.setsockopt(ZMQ_ROUTER_MANDATORY, 1);
+        socket = new zmq::socket_t{ctx, zmq::socket_type::router};
+        socket->setsockopt(ZMQ_ROUTER_MANDATORY, 1);
         std::string address = "tcp://*:" + std::to_string(port);
-        socket.bind(address);
+        socket->bind(address);
 
         std::cout << "Binding to the socket " << address << std::endl;
 
@@ -68,7 +75,7 @@ class Driver {
             zmq::message_t request;
 
             // receive a request from client
-            socket.recv(request, zmq::recv_flags::none);
+            socket->recv(request, zmq::recv_flags::none);
 
             std::string msg = request.to_string();
 
@@ -87,22 +94,25 @@ class Driver {
 
                 if (it == pending_joins.end()) {
                     std::cout << "Couldn't find worker " << params << std::endl;
+
                 } else {
                     std::string m = tasker::GetCommand(tasker::Commands::ACK);
                     pending_joins[params]->Send(m);
                 }
 
                 if (on_connected != NULL) {
-                    on_connected(params, "");
+                    std::string w_type = "generic";
+                    on_connected(params, w_type);
                 }
             } else if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
                 std::cout << "Message received from worker :  " << params << std::endl;
+                //this->Send("random_clinet", "Response");
             } else {
                 std::string worker_id = request.to_string();
                 // this could be a pending join
                 std::cout << "Registering the first message from [" << worker_id << "]" << std::endl;
 
-                Worker *worker = new Worker(&socket, worker_id);
+                Worker *worker = new Worker(socket, worker_id);
                 pending_joins.insert(std::make_pair(worker_id, worker));
                 std::cout << "Added to pending joins" << std::endl;
             }
@@ -110,17 +120,36 @@ class Driver {
     }
 
    public:
-    void SetOnWorkerJoined(const std::function<void(std::string, std::string)> &on_worker_joined) {
+    void Send(const std::string &to, const std::string &msg) {
+        std::cout << "Sending message : " << msg << " to : " << to << std::endl;
+        zmq::message_t message1(msg.size());
+        std::memcpy(message1.data(), to.data(), to.size());
+        socket->send(message1, zmq::send_flags::sndmore);
+
+        zmq::message_t message(msg.size());
+        std::memcpy(message.data(), msg.data(), msg.size());
+        socket->send(message, zmq::send_flags::none);
+    }
+
+    void SetOnWorkerJoined(const std::function<void(std::string &, std::string &)> &on_worker_joined) {
         this->on_worker_joined = on_worker_joined;
     }
 
-    void SetOnClientConnected(const std::function<void(std::string, std::string)> &on_client_connected) {
+    void SetOnClientConnected(const std::function<void(std::string &, std::string &)> &on_client_connected) {
         this->on_client_connected = on_client_connected;
     }
 
+    void SetOnWorkerMsg(const std::function<void(std::string &, std::string &)> &on_worker_msg) {
+        this->on_worker_msg = on_worker_msg;
+    }
+
+    void SetOnClientMsg(const std::function<void(std::string &, std::string &)> &on_client_msg) {
+        this->on_client_msg = on_client_msg;
+    }
+
     void Start() {
-        std::thread clients(&Driver::StartHandler, this, 5000, this->on_client_connected);
-        std::thread workers(&Driver::StartHandler, this, 5050, this->on_worker_joined);
+        std::thread clients(&Driver::StartHandler, this, 5000, this->on_client_connected, this->on_client_msg);
+        std::thread workers(&Driver::StartHandler, this, 5050, this->on_worker_joined, this->on_worker_msg);
 
         clients.join();
         workers.join();
@@ -130,13 +159,19 @@ class Driver {
 
 int main(int argc, char *argv[]) {
     tasker::Driver driver;
-    driver.SetOnWorkerJoined([](std::string worker_id, std::string worker_type) {
+
+    driver.SetOnWorkerJoined([](std::string &worker_id, std::string &worker_type) {
         std::cout << "Worker joined : " << worker_id << std::endl;
     });
 
-    driver.SetOnClientConnected([](std::string client_id, std::string client_meta) {
+    driver.SetOnClientConnected([](std::string &client_id, std::string &client_meta) {
         std::cout << "Client connected : " << client_id << std::endl;
     });
+
+    driver.SetOnWorkerMsg([](std::string &worker_id, std::string &msg) {
+        std::cout << "Worker message : " << worker_id << " : " << msg << std::endl;
+    });
+
     driver.Start();
     return 0;
 }
