@@ -9,12 +9,22 @@ class Client {
    private:
     std::string SPACE = " ";
     zmq::socket_t *socket;
-    const std::string &id;
+    const std::string id;
 
-    void Send(const std::string &msg) {
-        std::cout << "Sending message : " << msg << std::endl;
-        zmq::message_t message(msg.size());
-        std::memcpy(message.data(), msg.data(), msg.size());
+    void Send(const std::string &cmd, const std::string &msg = "") {
+        std::string final_message;
+        final_message.reserve(cmd.size() + 1 + this->id.size() + 1 + msg.size());
+
+        final_message.append(cmd);
+        final_message.append(" ");
+        final_message.append(this->id);
+        final_message.append(" ");
+        final_message.append(msg);
+
+        zmq::message_t message(final_message.size());
+        std::memcpy(message.data(), final_message.data(), final_message.size());
+
+        std::cout << "Sending message : " << message.to_string() << std::endl;
         socket->send(message, zmq::send_flags::none);
     }
 
@@ -41,15 +51,15 @@ class Client {
 
         // sending join message
         std::string cmd = tasker::GetCommand(tasker::JOIN);
-        cmd.append(SPACE);
-        cmd.append(this->id);
         Send(cmd);
+
+        cmd = tasker::GetCommand(tasker::MESSAGE);
 
         // now start continuous listening
         while (true) {
             std::string line;
             std::getline(std::cin, line);
-            Send(line);
+            Send(cmd, line);
 
             zmq::message_t request;
 
@@ -73,7 +83,7 @@ class Client {
 }  // namespace tasker
 
 int main(int argc, char *argv[]) {
-    tasker::Client client("random_client");
+    tasker::Client client(argv[1]);
     client.Start();
     return 0;
 }

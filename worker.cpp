@@ -10,7 +10,7 @@ class Worker {
    private:
     std::string SPACE = " ";
     zmq::socket_t *socket;
-    const std::string &id;
+    const std::string id;
     std::function<void(std::string)> on_message;
 
    public:
@@ -21,14 +21,25 @@ class Worker {
         this->on_message = on_message;
     }
 
-    void Send(const std::string &msg) {
-        std::cout << "Sending message : " << msg << std::endl;
-        zmq::message_t message(msg.size());
-        std::memcpy(message.data(), msg.data(), msg.size());
+    void Send(const std::string &cmd, const std::string &msg = "") const {
+        std::string final_msg;
+        final_msg.reserve(cmd.size() + 1 + id.size() + 1 + msg.size());
+        final_msg.append(cmd);
+        final_msg.append(" ");
+        final_msg.append(id);
+        final_msg.append("");
+        final_msg.append(msg);
+
+        zmq::message_t message(final_msg.size());
+        std::memcpy(message.data(), final_msg.data(), final_msg.size());
+
+        std::cout << "Sending message : " << message.to_string() << std::endl;
         socket->send(message, zmq::send_flags::none);
     }
 
-    int Start() {
+    int Start(std::string &driver_address) {
+        std::cout << "Starting worker " << this->id << std::endl;
+
         //connect to the driver
         zmq::context_t ctx{1};  // 1 IO thread
 
@@ -36,7 +47,7 @@ class Worker {
         this->socket->setsockopt(ZMQ_IDENTITY, this->id.c_str(), this->id.size());
 
         std::cout << "Connecting to the driver..." << std::endl;
-        this->socket->connect("tcp://localhost:5050");
+        this->socket->connect(driver_address);
 
         if (socket->connected()) {
             std::cout << "Connected to the server..." << std::endl;
@@ -46,10 +57,7 @@ class Worker {
         }
 
         // sending join message
-        std::string cmd = tasker::GetCommand(tasker::JOIN);
-        cmd.append(SPACE);
-        cmd.append(this->id);
-        Send(cmd);
+        Send(tasker::GetCommand(tasker::JOIN));
 
         // now start continuous listening
         while (true) {
@@ -76,9 +84,13 @@ class Worker {
 
 int main(int argc, char *argv[]) {
     tasker::Worker worker(argv[1]);
-    worker.SetOnMessage([](std::string msg) {
+    worker.SetOnMessage([worker](std::string msg) {
         std::cout << "Message received from server : " << msg << std::endl;
+        std::string resp = "200";
+        std::string cmd = tasker::GetCommand(tasker::Commands::MESSAGE);
+        worker.Send(cmd, resp);
     });
-    worker.Start();
+    std::string driver_address = "tcp://localhost:5050";
+    worker.Start(driver_address);
     return 0;
 }
