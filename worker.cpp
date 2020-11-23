@@ -27,8 +27,11 @@ class Worker {
         final_msg.append(cmd);
         final_msg.append(" ");
         final_msg.append(id);
-        final_msg.append("");
-        final_msg.append(msg);
+
+        if (msg.size() > 0) {
+            final_msg.append(" ");
+            final_msg.append(msg);
+        }
 
         zmq::message_t message(final_msg.size());
         std::memcpy(message.data(), final_msg.data(), final_msg.size());
@@ -69,10 +72,17 @@ class Worker {
 
             std::string msg = request.to_string();
             std::string cmd = msg.substr(0, 3);
-            std::string params = msg.substr(4, msg.length());
+            std::string params = "";
+
+            if (msg.size() > 3) {
+                params = msg.substr(4, msg.length());
+            }
 
             int status = -1;
             if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
+                this->on_message(params);
+            } else if (tasker::GetCommand(tasker::Commands::ACK).compare(cmd) == 0) {
+                std::cout << "Ack received for connection..." << std::endl;
             } else {
                 std::cout << "Unknown message : " << msg << std::endl;
             }
@@ -84,7 +94,7 @@ class Worker {
 
 int main(int argc, char *argv[]) {
     tasker::Worker worker(argv[1]);
-    worker.SetOnMessage([worker](std::string msg) {
+    worker.SetOnMessage([&worker](std::string msg) {
         std::cout << "Message received from server : " << msg << std::endl;
         std::string resp = "200";
         std::string cmd = tasker::GetCommand(tasker::Commands::MESSAGE);

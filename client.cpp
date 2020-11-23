@@ -18,8 +18,10 @@ class Client {
         final_message.append(cmd);
         final_message.append(" ");
         final_message.append(this->id);
-        final_message.append(" ");
-        final_message.append(msg);
+        if (msg.size() > 0) {
+            final_message.append(" ");
+            final_message.append(msg);
+        }
 
         zmq::message_t message(final_message.size());
         std::memcpy(message.data(), final_message.data(), final_message.size());
