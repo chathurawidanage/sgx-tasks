@@ -13,7 +13,11 @@ class Client {
 
     void Send(const std::string &cmd, const std::string &msg = "") {
         std::string final_message;
-        final_message.reserve(cmd.size() + 1 + this->id.size() + 1 + msg.size());
+        int32_t msg_length = cmd.size() + 1 + this->id.size();
+        if (msg.size() > 0) {
+            msg_length += (1 + msg.size());
+        }
+        final_message.reserve(msg_length);
 
         final_message.append(cmd);
         final_message.append(" ");
@@ -71,7 +75,11 @@ class Client {
 
             std::string msg = request.to_string();
             std::string cmd = msg.substr(0, 3);
-            std::string params = msg.substr(4, msg.length());
+            std::string params = "";
+
+            if (cmd.size() > 3) {
+                params = msg.substr(4, msg.length());
+            }
 
             int status = -1;
             if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {

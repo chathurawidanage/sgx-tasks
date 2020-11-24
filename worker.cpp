@@ -3,6 +3,7 @@
 #include <string>
 
 #include "messages.hpp"
+#include "spdlog/spdlog.h"
 #include "zmq.hpp"
 
 namespace tasker {

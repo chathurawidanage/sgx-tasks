@@ -18,24 +18,29 @@ include_directories(SYSTEM ${ZeroMQ_INCLUDE_DIR})
 
 find_package(Threads)
 
+if(NOT TARGET spdlog)
+    # Stand-alone build
+    find_package(spdlog REQUIRED)
+endif()
+
 # Driver executable
 add_executable(
     driver
     driver.cpp
 )
-target_link_libraries(driver PUBLIC ${ZeroMQ_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(driver PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT})
 
 # Worker executable
 add_executable(
     worker
     worker.cpp
 )
-target_link_libraries(worker PUBLIC ${ZeroMQ_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(worker PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT})
 
 # Client executable
 add_executable(
     client
     client.cpp
 )
-target_link_libraries(client PUBLIC ${ZeroMQ_LIBRARY} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(client PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT})
 

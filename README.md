@@ -12,6 +12,11 @@
 sudo apt-get install libzmq3-dev
 ```
 
+2. Speed Log
+```bash
+sudo apt install libspdlog-dev
+```
+
 ## Messages
 
 ### Worker/Client to Driver

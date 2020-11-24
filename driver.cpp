@@ -1,10 +1,14 @@
+#include <chrono>
 #include <functional>
 #include <iostream>
+#include <list>
+#include <queue>
 #include <set>
 #include <thread>
 #include <unordered_map>
 
 #include "messages.hpp"
+#include "spdlog/spdlog.h"
 #include "zmq.hpp"
 
 namespace tasker {
@@ -24,7 +28,8 @@ class Driver {
                       std::shared_ptr<zmq::socket_t> &socket,
                       const std::function<void(std::string &, std::string &)> &on_connected,
                       const std::function<void(std::string &, std::string &)> &on_msg) {
-        std::unordered_map<std::string, Worker *> pending_joins{};
+        std::set<std::string> pending_joins{};
+        std::set<std::string> joined{};
 
         zmq::context_t ctx{1};  // 1 IO thread
 
@@ -34,37 +39,42 @@ class Driver {
         std::string address = "tcp://*:" + std::to_string(port);
         socket->bind(address);
 
-        std::cout << "Binding to the socket " << socket.use_count() << address << std::endl;
+        spdlog::info("Binding to the socket {}", address);
 
         while (true) {
             // send hello
             zmq::message_t request;
 
             // receive a request from client
-            std::cout << "Blocking for a message..." << std::endl;
+            spdlog::debug("Blocking for a message...");
+
             socket->recv(request, zmq::recv_flags::none);
-            std::cout << "Recvd message : " << request.to_string() << std::endl;
+            spdlog::debug("Recvd message : {}", request.to_string());
 
             std::string msg = request.to_string();
 
             std::string cmd = msg.substr(0, 3);
             std::string params = msg.substr(4, msg.length());
 
-            std::cout << "Command : " << cmd << ", Params : " << params << std::endl;
+            spdlog::debug("Command : {}, Params : {}", cmd, params);
 
             if (tasker::GetCommand(tasker::Commands::JOIN).compare(cmd) == 0) {
                 // check whether a pending join exists
-                // Worker worker(&socket, pending_joins[params]);
-                std::cout << "No of registered workers :  " << pending_joins.size() << std::endl;
-                std::cout << "Looking or target Id : [" << params << "]" << std::endl;
 
-                std::unordered_map<std::string, Worker *>::iterator it = pending_joins.find(params);
+                spdlog::debug("No of registered workers :  {}", pending_joins.size());
+                spdlog::debug("Looking or target Id : [{}]", params);
+
+                std::set<std::string>::iterator it = pending_joins.find(params);
 
                 if (it == pending_joins.end()) {
-                    std::cout << "Couldn't find worker " << params << std::endl;
+                    spdlog::warn("Couldn't find worker {}", params);
                 } else {
                     std::string m = tasker::GetCommand(tasker::Commands::ACK);
                     this->Send(socket, params, m);
+
+                    // remove from pending and add to joined
+                    pending_joins.erase(params);
+                    joined.insert(params);
                 }
 
                 if (on_connected != NULL) {
@@ -72,25 +82,25 @@ class Driver {
                     on_connected(params, w_type);
                 }
             } else if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
-                std::cout << "Message received from worker :  " << params << std::endl;
+                spdlog::debug("Message received :  {}", params);
                 std::string id = params.substr(0, params.find(' '));
-                std::string rcvd_msg = params.substr(params.find(' '), params.size());
-
-                on_msg(id, rcvd_msg);
+                if (joined.find(id) != joined.end()) {
+                    std::string rcvd_msg = params.substr(params.find(' '), params.size());
+                    on_msg(id, rcvd_msg);
+                } else {
+                    spdlog::warn("Message received from an unknown worker {}", id);
+                }
             } else {
                 std::string worker_id = request.to_string();
                 // this could be a pending join
-                std::cout << "Registering the first message from [" << worker_id << "]" << std::endl;
-
-                Worker *worker = new Worker(nullptr, worker_id);
-                pending_joins.insert(std::make_pair(worker_id, worker));
-                std::cout << "Added to pending joins" << std::endl;
+                spdlog::info("Registering the first message from [{}]", worker_id);
+                pending_joins.insert(worker_id);
             }
         }
     }
 
     void Send(std::shared_ptr<zmq::socket_t> socket, const std::string &to, const std::string &msg) const {
-        std::cout << "Sending message : " << msg << " to : " << to << std::endl;
+        spdlog::debug("Sending message : {} to {}", msg, to);
         zmq::message_t header_msg(to.size());
         std::memcpy(header_msg.data(), to.data(), to.size());
         socket->send(header_msg, zmq::send_flags::sndmore);
@@ -142,25 +152,93 @@ class Driver {
 };
 }  // namespace tasker
 
+class Job {
+   private:
+    std::string &client_id;
+
+   public:
+    Job(std::string &client_id) : client_id(client_id) {
+    }
+
+    /**
+     * Returns true if job is completed
+     * */
+    bool Progress() {
+        return false;
+    }
+
+    void Finalize() {
+    }
+};
+
+class JobExecutor {
+   private:
+    std::list<Job> jobs{};
+    std::mutex lock;
+
+    void progress() {
+        while (true) {
+            if (jobs.empty()) {
+                // todo replace with condition variables and locks
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+            }
+            lock.lock();
+            std::list<Job>::iterator i = jobs.begin();
+            while (i != jobs.end()) {
+                bool done = (*i).Progress();
+                if (done) {
+                    (*i).Finalize();
+                    jobs.erase(i);
+                }
+                i++;
+            }
+            lock.unlock();
+        }
+    }
+
+   public:
+    void AddJob(Job &job) {
+        lock.lock();
+        this->jobs.push_back(job);
+        lock.unlock();
+    }
+
+    void Start() {
+        spdlog::info("Starting job executor...");
+        std::thread(&JobExecutor::progress, this);
+    }
+};
+
 int main(int argc, char *argv[]) {
+    //spdlog::set_level(spdlog::level::debug);
+
+    std::queue<std::string> available_workers{};
+    std::queue<std::string> busy_workers{};
+
     tasker::Driver driver;
 
-    driver.SetOnWorkerJoined([&driver](std::string &worker_id, std::string &worker_type) {
-        std::cout << "Worker joined : " << worker_id << std::endl;
-        driver.SendToWorker(worker_id, "MSG DSP");
+    JobExecutor executor;
+    executor.Start();
+
+    driver.SetOnWorkerJoined([&driver, &available_workers](std::string &worker_id, std::string &worker_type) {
+        spdlog::info("Worker joined : {}", worker_id);
+        //driver.SendToWorker(worker_id, "MSG DSP");
+        available_workers.push(worker_id);
     });
 
     driver.SetOnClientConnected([](std::string &client_id, std::string &client_meta) {
-        std::cout << "Client connected : " << client_id << std::endl;
+        spdlog::info("Client connected : {}", client_id);
     });
 
     driver.SetOnWorkerMsg([&driver](std::string &worker_id, std::string &msg) {
-        std::cout << "Worker message : " << worker_id << " : " << msg << std::endl;
+        spdlog::info("Worker message from {} : {}", worker_id, msg);
     });
 
-    driver.SetOnClientMsg([&driver](std::string &client_id, std::string &msg) {
-        std::cout << "Clinet message : " << client_id << " : " << msg << std::endl;
+    driver.SetOnClientMsg([&driver, &available_workers](std::string &client_id, std::string &msg) {
+        spdlog::info("Clinet message from {} : {}", client_id, msg);
         driver.SendToClient(client_id, "Gotcha!");
+        std::string worker_id = available_workers.front();
+        driver.SendToWorker(worker_id, msg);
     });
 
     driver.Start();
