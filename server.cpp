@@ -1,5 +1,3 @@
-#include "driver/include/driver.hpp"
-
 #include <chrono>
 #include <functional>
 #include <iostream>
@@ -9,15 +7,16 @@
 #include <thread>
 #include <unordered_map>
 
+#include "driver/include/driver.hpp"
 #include "driver/include/job.hpp"
-#include "driver/include/worker.hpp"
+#include "driver/include/worker_handler.hpp"
 #include "spdlog/spdlog.h"
 
 /**
  * This job will require only one worker
  * */
 class PartitionJob : public tasker::Job {
-    std::shared_ptr<tasker::Worker> worker = NULL;
+    std::shared_ptr<tasker::WorkerHandler> worker = NULL;
 
     void OnWorkerMessage(std::string &worker_id, std::string &msg) {
     }

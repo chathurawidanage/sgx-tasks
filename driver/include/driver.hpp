@@ -32,6 +32,10 @@ class Driver {
     void Send(std::shared_ptr<zmq::socket_t> socket, const std::string &to, const std::string &msg) const;
 
    public:
+    std::shared_ptr<tasker::JobExecutor> GetExecutor() {
+        return this->executor;
+    }
+
     void SendToClient(const std::string &to, const std::string &msg) const {
         this->Send(this->client_socket, to, msg);
     }

@@ -5,7 +5,7 @@
 #include <queue>
 
 #include "job.hpp"
-#include "worker.hpp"
+#include "worker_handler.hpp"
 
 namespace tasker {
 
@@ -15,7 +15,7 @@ class JobExecutor {
    private:
     std::list<Job> jobs{};
     std::mutex lock{};
-    std::queue<std::shared_ptr<tasker::Worker>> available_workers{};
+    std::queue<std::shared_ptr<tasker::WorkerHandler>> available_workers{};
 
     tasker::Driver &driver;
 
@@ -27,15 +27,15 @@ class JobExecutor {
     void AddJob(Job &job);
 
     void AddWorker(std::string &worker_id, std::string &worker_type) {
-        this->available_workers.push(std::make_shared<tasker::Worker>(worker_id, worker_type, driver));
+        this->available_workers.push(std::make_shared<tasker::WorkerHandler>(worker_id, worker_type, driver));
     }
 
     /**
      * This function will be called by Job to get a worker allocated for the job
      **/
-    std::shared_ptr<Worker> AllocateWorker(Job &to, std::string worker_type);
+    std::shared_ptr<tasker::WorkerHandler> AllocateWorker(Job &to, std::string worker_type);
 
-    void ReleaseWorker(std::shared_ptr<Worker> worker);
+    void ReleaseWorker(std::shared_ptr<tasker::WorkerHandler> worker);
 
     void Start();
 };

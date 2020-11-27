@@ -3,9 +3,9 @@
 tasker::JobExecutor::JobExecutor(tasker::Driver &driver) : driver(driver) {
 }
 
-std::shared_ptr<tasker::Worker> tasker::JobExecutor::AllocateWorker(Job &to, std::string worker_type) {
+std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &to, std::string worker_type) {
     if (!available_workers.empty()) {
-        std::shared_ptr<Worker> allocated_worker = available_workers.front();
+        std::shared_ptr<tasker::WorkerHandler> allocated_worker = available_workers.front();
         available_workers.pop();
         return allocated_worker;
     } else {
@@ -45,6 +45,6 @@ void tasker::JobExecutor::Start() {
     trd.join();
 }
 
-void tasker::JobExecutor::ReleaseWorker(std::shared_ptr<Worker> worker) {
+void tasker::JobExecutor::ReleaseWorker(std::shared_ptr<WorkerHandler> worker) {
     this->available_workers.push(worker);
 }

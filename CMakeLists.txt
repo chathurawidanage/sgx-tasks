@@ -37,12 +37,14 @@ add_executable(
 target_link_libraries(server PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} driver-lib)
 
 # Worker executable
+add_subdirectory(worker)
+include_directories(worker/include)
 add_executable(
-    worker
-    worker.cpp
+    task
+    task.cpp
     common/messages.cpp
 )
-target_link_libraries(worker PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(task PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} worker-lib)
 
 # Client executable
 add_executable(

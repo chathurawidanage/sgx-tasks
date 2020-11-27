@@ -4,14 +4,14 @@
 
 #include "driver.hpp"
 namespace tasker {
-class Worker {
+class WorkerHandler {
    private:
     std::string &worker_id;
     std::string &worker_type;
     tasker::Driver &driver;
 
    public:
-    Worker(std::string &worker_id,
+    WorkerHandler(std::string &worker_id,
            std::string &worker_type,
            tasker::Driver &driver) : worker_id(worker_id), worker_type(worker_type), driver(driver) {
     }
