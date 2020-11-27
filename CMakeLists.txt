@@ -23,17 +23,24 @@ if(NOT TARGET spdlog)
     find_package(spdlog REQUIRED)
 endif()
 
+add_subdirectory(common)
+include_directories(common/include)
+
 # Driver executable
+add_subdirectory(driver)
+include_directories(driver/include)
+
 add_executable(
-    driver
-    driver.cpp
+    server
+    server.cpp
 )
-target_link_libraries(driver PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(server PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} driver-lib)
 
 # Worker executable
 add_executable(
     worker
     worker.cpp
+    common/messages.cpp
 )
 target_link_libraries(worker PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT})
 
@@ -41,6 +48,7 @@ target_link_libraries(worker PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THR
 add_executable(
     client
     client.cpp
+    common/messages.cpp
 )
 target_link_libraries(client PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT})
 
