@@ -4,25 +4,29 @@
 #include <memory>
 #include <string>
 
+#include "driver.hpp"
+
 namespace tasker {
-class JobExecutor;
 
 class Job {
    protected:
-    std::string &client_id;
-    std::shared_ptr<tasker::JobExecutor> executor;
+    std::string job_id;
+    std::string client_id;
+    tasker::Driver &driver;
 
    public:
-    Job(std::string &client_id, std::shared_ptr<tasker::JobExecutor> executor);
+    Job(std::string job_id, std::string client_id, tasker::Driver &driver);
 
-    void OnWorkerMessage(std::string &worker_id, std::string &msg);
+    virtual void OnWorkerMessage(std::string &worker_id, std::string &msg);
+
+    std::string &GetId();
 
     /**
      * Returns true if job is completed
      * */
-    bool Progress();
+    virtual bool Progress();
 
-    void Finalize();
+    virtual void Finalize();
 };
 }  // namespace tasker
 

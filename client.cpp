@@ -59,11 +59,22 @@ class Client {
         std::string cmd = tasker::GetCommand(tasker::JOIN);
         Send(cmd);
 
+        // wait for ack
+        zmq::message_t ack_req;
+        socket->recv(ack_req, zmq::recv_flags::none);
+        if (tasker::GetCommand(tasker::Commands::ACK).compare(ack_req.to_string()) == 0) {
+            std::cout << "Ack recevied for join" << std::endl;
+        } else {
+            std::cout << "Ack not recevied for join" << std::endl;
+            return 500;
+        }
+
         cmd = tasker::GetCommand(tasker::MESSAGE);
 
         // now start continuous listening
         while (true) {
             std::string line;
+            std::cout << "client$ ";
             std::getline(std::cin, line);
             Send(cmd, line);
 
@@ -83,6 +94,7 @@ class Client {
 
             int status = -1;
             if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
+                std::cout << "Message : " << msg << std::endl;
             } else {
                 std::cout << "Unknown message : " << msg << std::endl;
             }

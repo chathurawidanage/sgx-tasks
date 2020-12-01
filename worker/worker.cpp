@@ -68,9 +68,9 @@ int tasker::Worker::Start(std::string &driver_address) {
         if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
             this->on_message(params);
         } else if (tasker::GetCommand(tasker::Commands::ACK).compare(cmd) == 0) {
-            spdlog::debug("Ack received for connection...");
+            spdlog::info("Ack received for connection...");
         } else {
-            spdlog::debug("Unknown message : {}", msg);
+            spdlog::info("Unknown message : {}", msg);
         }
     }
     return 0;

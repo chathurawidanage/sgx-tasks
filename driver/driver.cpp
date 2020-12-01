@@ -1,7 +1,7 @@
 #include "driver.hpp"
 
-#include "messages.hpp"
 #include "executor.hpp"
+#include "messages.hpp"
 #include "zmq.hpp"
 
 void tasker::Driver::Start() {
@@ -17,7 +17,7 @@ void tasker::Driver::Start() {
 }
 
 void tasker::Driver::Send(std::shared_ptr<zmq::socket_t> socket, const std::string &to, const std::string &msg) const {
-    spdlog::debug("Sending message : {} to {}", msg, to);
+    spdlog::info("Sending message : {} to {}", msg, to);
     zmq::message_t header_msg(to.size());
     std::memcpy(header_msg.data(), to.data(), to.size());
     socket->send(header_msg, zmq::send_flags::sndmore);
@@ -88,7 +88,12 @@ void tasker::Driver::StartHandler(int32_t port,
             spdlog::debug("Message received :  {}", params);
             std::string id = params.substr(0, params.find(' '));
             if (joined.find(id) != joined.end()) {
-                std::string rcvd_msg = params.substr(params.find(' '), params.size());
+                std::string rcvd_msg = params.substr(params.find(' ') + 1, params.size());
+
+                // calling on message of job
+                this->executor->ForwardMsgToJob(id, rcvd_msg);
+
+                // calling on message of user
                 on_msg(id, rcvd_msg);
             } else {
                 spdlog::warn("Message received from an unknown worker {}", id);
