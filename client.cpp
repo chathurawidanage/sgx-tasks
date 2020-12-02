@@ -10,6 +10,7 @@ class Client {
     std::string SPACE = " ";
     zmq::socket_t *socket;
     const std::string id;
+    const std::string server_url;
 
     void Send(const std::string &cmd, const std::string &msg = "") {
         std::string final_message;
@@ -35,7 +36,7 @@ class Client {
     }
 
    public:
-    Client(const std::string &id) : id(id) {
+    Client(const std::string &id, const std::string &server_url) : id(id), server_url(server_url) {
     }
 
     int Start() {
@@ -46,7 +47,7 @@ class Client {
         this->socket->setsockopt(ZMQ_IDENTITY, this->id.c_str(), this->id.size());
 
         std::cout << "Connecting to the driver..." << std::endl;
-        this->socket->connect("tcp://localhost:5000");
+        this->socket->connect(this->server_url);
 
         if (socket->connected()) {
             std::cout << "Connected to the server..." << std::endl;
@@ -105,7 +106,11 @@ class Client {
 }  // namespace tasker
 
 int main(int argc, char *argv[]) {
-    tasker::Client client(argv[1]);
+    std::string server_url = "tcp://localhost:5000";
+    if (argc == 3) {
+        server_url = argv[2];
+    }
+    tasker::Client client(argv[1], server_url);
     client.Start();
     return 0;
 }
