@@ -1,0 +1,47 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasker-worker
+  labels:
+    app: tasker-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasker-worker
+  template:
+    metadata:
+      labels:
+        app: tasker-worker
+    spec:
+      containers:
+        - name: tasker
+          image: cwidanage/tasker:0.02
+          command:
+            [
+              "/sgx-tasks/build/task"
+            ]
+          args: ["$(cat /proc/sys/kernel/random/uuid)",
+              "tcp://tasker-server:5050"]
+          resources:
+            limits:
+              cpu: 4
+              memory: 5G
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: tasker-server
+spec:
+  type: NodePort
+  selector:
+    app: tasker-server
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      name: clients
+    - protocol: TCP
+      port: 5050
+      targetPort: 5050
+      name: workers

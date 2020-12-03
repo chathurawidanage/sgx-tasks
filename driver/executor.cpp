@@ -30,11 +30,16 @@ void tasker::JobExecutor::AddJob(std::shared_ptr<Job> job) {
 }
 
 void tasker::JobExecutor::Progress() {
+    int32_t idle_count = 0;
     while (true) {
         if (this->jobs.empty()) {
             // todo replace with condition variables and locks
             std::this_thread::sleep_for(std::chrono::seconds(10));
-            spdlog::info("No jobs to process....");
+            if (idle_count++ % 100 == 0) {
+                idle_count = 0;
+                spdlog::info("No jobs to process....");
+            }
+            continue;
         }
         this->jobs_lock.lock();
         std::unordered_map<std::string, std::shared_ptr<Job>>::iterator i = this->jobs.begin();

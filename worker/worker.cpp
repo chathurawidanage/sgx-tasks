@@ -35,7 +35,7 @@ int tasker::Worker::Start(std::string &driver_address) {
     this->socket = new zmq::socket_t{ctx, zmq::socket_type::dealer};
     this->socket->setsockopt(ZMQ_IDENTITY, this->id.c_str(), this->id.size());
 
-    spdlog::info("Connecting to the driver...");
+    spdlog::info("Connecting to the driver at {}", driver_address);
     this->socket->connect(driver_address);
 
     if (socket->connected()) {
