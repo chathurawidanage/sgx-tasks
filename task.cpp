@@ -18,7 +18,10 @@ int main(int argc, char *argv[]) {
         std::this_thread::sleep_for(std::chrono::seconds(10));
         worker.Send(cmd, resp);
     });
-    std::string driver_address = "tcp://localhost:5050";
-    worker.Start(driver_address);
+    std::string server_url = "tcp://localhost:5050";
+    if (argc == 3) {
+        server_url = argv[2];
+    }
+    worker.Start(server_url);
     return 0;
 }

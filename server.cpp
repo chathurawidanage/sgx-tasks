@@ -22,8 +22,6 @@ class IndexJob : public tasker::Job {
              tasker::Driver &driver) : Job(job_id, client_id, driver) {
         this->commnd = command;
     }
-
-    
 };
 
 /**
@@ -110,6 +108,7 @@ int main(int argc, char *argv[]) {
             driver.GetExecutor()->AddJob(prt_job);
         } else {
             spdlog::info("Unknown Command : {}", task_cmd);
+            driver.SendToClient(client_id, "MSG Unknown command");
         }
     });
 

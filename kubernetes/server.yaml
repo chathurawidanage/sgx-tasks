@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasker-server
+  labels:
+    app: tasker-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasker-server
+  template:
+    metadata:
+      labels:
+        app: tasker-server
+    spec:
+      containers:
+        - name: tasker
+          image: cwidanage/tasker:0.01
+          command: ["/sgx-tasks/build/server"]
+          ports:
+            - containerPort: 5000
+            - containerPort: 5050
+          args: []
+          resources:
+            limits:
+              cpu: 4
+              memory: 5G
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: tasker-server
+spec:
+  type: NodePort
+  selector:
+    app: tasker-server
+  ports:
+    - protocol: TCP
+      port: 5000
+      targetPort: 5000
+      name: clients
+    - protocol: TCP
+      port: 5050
+      targetPort: 5050
+      name: workers
