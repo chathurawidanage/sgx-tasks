@@ -27,9 +27,8 @@ class Driver {
     void StartHandler(int32_t port,
                       std::shared_ptr<zmq::socket_t> &socket,
                       const std::function<void(std::string &, std::string &)> &on_connected,
-                      const std::function<void(std::string &, std::string &)> &on_msg);
-
-    void StartPingHandler(int32_t port);
+                      const std::function<void(std::string &, std::string &)> &on_msg,
+                      const std::function<void(std::string &)> &on_ping);
 
     void Send(std::shared_ptr<zmq::socket_t> socket, const std::string &to, const std::string &msg) const;
 
