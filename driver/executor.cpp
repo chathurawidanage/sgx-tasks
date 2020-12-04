@@ -10,6 +10,23 @@ std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &
     if (!available_workers.empty()) {
         std::shared_ptr<tasker::WorkerHandler> allocated_worker = available_workers.front();
 
+        // check thether the worker is healthy
+        this->ping_lock.lock();
+        auto ping_it = this->ping_times.find(allocated_worker->GetId());
+        if (ping_it != this->ping_times.end()) {
+            int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+            if (timestamp - ping_it->second > this->ping_timeout) {
+                spdlog::info("Dead worker detected. Removing {} from the available workers...", allocated_worker->GetId());
+                // remove worker from avilable workers
+                available_workers.pop();
+
+                // todo remove from ping map
+                this->workers_lock.unlock();
+                return nullptr;
+            }
+        }
+        this->ping_lock.unlock();
+
         // assign worker to the job
         this->worker_assignment.insert(std::make_pair<>(allocated_worker->GetId(), to.GetId()));
 
@@ -52,6 +69,10 @@ void tasker::JobExecutor::OnPing(std::string &from_worker) {
 }
 
 void tasker::JobExecutor::IdentifyFailures() {
+    // this invloves reading/writing all data structures. Aquiring all locks
+    this->ping_lock.lock();
+    this->workers_lock.lock();
+    this->jobs_lock.lock();
     int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
     // check for deadworkers in the already allocated workers
     auto worker_asg_it = this->worker_assignment.begin();
@@ -85,6 +106,9 @@ void tasker::JobExecutor::IdentifyFailures() {
             worker_asg_it++;
         }
     }
+    this->ping_lock.unlock();
+    this->workers_lock.unlock();
+    this->jobs_lock.unlock();
 }
 
 void tasker::JobExecutor::Progress() {
@@ -126,6 +150,7 @@ void tasker::JobExecutor::Start() {
 }
 
 void tasker::JobExecutor::ReleaseWorker(Job &of, std::shared_ptr<WorkerHandler> worker) {
+    this->workers_lock.lock();
     std::unordered_map<std::string, std::string>::iterator it = this->worker_assignment.find(worker->GetId());
     // <worker_id, job_id>
     if (it != this->worker_assignment.end()) {
@@ -143,6 +168,7 @@ void tasker::JobExecutor::ReleaseWorker(Job &of, std::shared_ptr<WorkerHandler> 
                          of.GetId(), worker->GetId());
         }
     }
+    this->workers_lock.unlock();
 }
 
 void tasker::JobExecutor::ForwardMsgToJob(std::string &from, std::string &msg) {
