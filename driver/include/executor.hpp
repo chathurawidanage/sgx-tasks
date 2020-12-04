@@ -32,6 +32,8 @@ class JobExecutor {
 
     void Progress();
 
+    void IdentifyFailures();
+
    public:
     JobExecutor(tasker::Driver &driver);
 

@@ -51,41 +51,46 @@ void tasker::JobExecutor::OnPing(std::string &from_worker) {
     this->ping_lock.unlock();
 }
 
+void tasker::JobExecutor::IdentifyFailures() {
+    int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+    // check for deadworkers in the already allocated workers
+    auto worker_asg_it = this->worker_assignment.begin();
+    while (worker_asg_it != this->worker_assignment.end()) {
+        std::string worker_id = worker_asg_it->first;
+        auto ping_for_worker = this->ping_times.find(worker_id);
+        if (ping_for_worker != this->ping_times.end() && (timestamp - ping_for_worker->second) > this->ping_timeout) {
+            // met the condition for ping timeout
+            spdlog::info("Worker {} has been identified as a failure", worker_id);
+
+            auto job_it = this->jobs.find(worker_asg_it->second);
+            if (job_it == this->jobs.end()) {
+                spdlog::warn("Worker assignment contains an unknown job id", worker_asg_it->second);
+            } else {
+                // report the job, so it can request for another worker
+                job_it->second->OnWorkerRevoked(worker_id);
+
+                // remove from the worker allocation and put it back to the queue, giving it more time to connect
+                this->worker_assignment.erase(worker_id);
+
+                // remove it from the busy workers and putting back to the available queue
+                auto busy_it = this->busy_workers.find(worker_id);
+                if (busy_it == this->busy_workers.end()) {
+                    spdlog::warn("Couldn't find the worker in the busy workers list. Something wrong!");
+                } else {
+                    this->available_workers.push(busy_it->second);
+                    this->busy_workers.erase(worker_id);
+                }
+            }
+        } else {
+            worker_asg_it++;
+        }
+    }
+}
+
 void tasker::JobExecutor::Progress() {
     int32_t idle_count = 0;
     while (true) {
-        // identify dead workers
-        int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
-        // check for deadworkers in the already allocated workers
-        auto worker_asg_it = this->worker_assignment.begin();
-        while (worker_asg_it != this->worker_assignment.end()) {
-            std::string worker_id = worker_asg_it->first;
-            auto ping_for_worker = this->ping_times.find(worker_id);
-            if (ping_for_worker != this->ping_times.end() && (timestamp - ping_for_worker->second) > this->ping_timeout) {
-                // met the condition for ping timeout
-                auto job_it = this->jobs.find(worker_asg_it->second);
-                if (job_it == this->jobs.end()) {
-                    spdlog::warn("Worker assignment contains an unknown job id", worker_asg_it->second);
-                } else {
-                    // report the job, so it can request for another worker
-                    job_it->second->OnWorkerRevoked(worker_id);
-
-                    // remove from the worker allocation and put it back to the queue, giving it more time to connect
-                    this->worker_assignment.erase(worker_id);
-
-                    // remove it from the busy workers and putting back to the available queue
-                    auto busy_it = this->busy_workers.find(worker_id);
-                    if (busy_it == this->busy_workers.end()) {
-                        spdlog::warn("Couldn't find the worker in the busy workers list. Something wrong!");
-                    } else {
-                        this->available_workers.push(busy_it->second);
-                        this->busy_workers.erase(worker_id);
-                    }
-                }
-            } else {
-                worker_asg_it++;
-            }
-        }
+        this->IdentifyFailures();
 
         if (this->jobs.empty()) {
             // todo replace with condition variables and locks
