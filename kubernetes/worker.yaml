@@ -16,16 +16,14 @@ spec:
     spec:
       containers:
         - name: tasker
-          image: cwidanage/tasker:0.02
-          command:
-            [
-              "/sgx-tasks/build/task"
-            ]
-          args: ["$(cat /proc/sys/kernel/random/uuid)",
-              "tcp://tasker-server:5050"]
+          image: cwidanage/tasker:0.03
+          command: ["/sgx-tasks/build/task"]
+          args:
+            ["worker123", "tcp://tasker-server-worker:5050"]
+          imagePullPolicy: Always
           resources:
             limits:
-              cpu: 4
+              cpu: 1
               memory: 5G
 ---
 kind: Service

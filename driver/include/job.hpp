@@ -19,6 +19,8 @@ class Job {
 
     virtual void OnWorkerMessage(std::string &worker_id, std::string &msg);
 
+    virtual void OnWorkerRevoked(std::string &worker_id);
+
     std::string &GetId();
 
     /**

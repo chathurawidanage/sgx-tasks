@@ -10,6 +10,8 @@ void tasker::Driver::Start() {
     std::thread wk_trd = std::thread(&Driver::StartHandler, this, 5050, std::ref(this->worker_socket),
                                      this->on_worker_joined, this->on_worker_msg);
 
+    std::thread ping_trd = std::thread(&Driver::StartPingHandler, this, 6000);
+
     this->executor = std::make_shared<tasker::JobExecutor>(*this);
     this->executor->Start();
     cl_trd.join();
@@ -25,6 +27,28 @@ void tasker::Driver::Send(std::shared_ptr<zmq::socket_t> socket, const std::stri
     zmq::message_t message(msg.size());
     std::memcpy(message.data(), msg.data(), msg.size());
     socket->send(message, zmq::send_flags::none);
+}
+
+void tasker::Driver::StartPingHandler(int32_t port) {
+    zmq::context_t ctx{1};
+    zmq::socket_t ping_socket(ctx, zmq::socket_type::pull);
+    std::string address = "tcp://*:" + std::to_string(port);
+    ping_socket.bind(address);
+    while (true) {
+        zmq::message_t request;
+        ping_socket.recv(request, zmq::recv_flags::none);
+        std::string msg = request.to_string();
+
+        std::string cmd = msg.substr(0, 3);
+        std::string worker_id = msg.substr(4, msg.length());
+
+        if (tasker::GetCommand(tasker::Commands::PING).compare(cmd) == 0) {
+            spdlog::info("Ping received from {}", worker_id);
+            this->executor->OnPing(worker_id);
+        } else {
+            spdlog::debug("Unknown message received to ping service");
+        }
+    }
 }
 
 void tasker::Driver::StartHandler(int32_t port,

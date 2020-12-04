@@ -22,3 +22,7 @@ void tasker::Job::Finalize() {
 void tasker::Job::OnWorkerMessage(std::string &worker_id, std::string &msg) {
     // nothing will be done
 }
+
+void tasker::Job::OnWorkerRevoked(std::string &worker_id) {
+    // nothing will be done
+}

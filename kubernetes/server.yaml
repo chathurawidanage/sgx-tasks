@@ -22,6 +22,7 @@ spec:
             - containerPort: 5000
             - containerPort: 5050
           args: []
+          imagePullPolicy: Always
           resources:
             limits:
               cpu: 4
@@ -30,7 +31,7 @@ spec:
 kind: Service
 apiVersion: v1
 metadata:
-  name: tasker-server
+  name: tasker-server-client
 spec:
   type: NodePort
   selector:
@@ -40,6 +41,16 @@ spec:
       port: 5000
       targetPort: 5000
       name: clients
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: tasker-server-worker
+spec:
+  type: ClusterIP
+  selector:
+    app: tasker-server
+  ports:
     - protocol: TCP
       port: 5050
       targetPort: 5050

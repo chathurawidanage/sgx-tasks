@@ -17,11 +17,18 @@ class JobExecutor {
     std::mutex jobs_lock{};
 
     std::queue<std::shared_ptr<tasker::WorkerHandler>> available_workers{};
+    std::unordered_map<std::string, std::shared_ptr<tasker::WorkerHandler>> busy_workers{};
     std::mutex workers_lock{};
 
     std::unordered_map<std::string, std::string> worker_assignment{};  // <worker_id, job_id>
 
+    std::unordered_map<std::string, int64_t> ping_times{};
+    std::mutex ping_lock{};
+
     tasker::Driver &driver;
+
+    // pring timeout
+    int64_t ping_timeout = 20000;
 
     void Progress();
 
@@ -31,6 +38,8 @@ class JobExecutor {
     void AddJob(std::shared_ptr<Job> job);
 
     void AddWorker(std::string &worker_id, std::string &worker_type);
+
+    void OnPing(std::string &from_worker);
 
     /**
      * This function will be called by Job to get a worker allocated for the job
