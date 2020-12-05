@@ -15,6 +15,8 @@ class Worker {
     const std::string id;
     std::function<void(std::string)> on_message;
 
+    int64_t ping_interval = 10000;
+
    public:
     Worker(const std::string &id);
 
@@ -23,6 +25,10 @@ class Worker {
     void Send(const std::string &cmd, const std::string &msg = "") const;
 
     int Start(std::string &driver_address);
+
+    const std::string &GetId();
+
+    int64_t GetPingInterval();
 };
 }  // namespace tasker
 #endif /* BCEF8E54_DCF8_411B_93BD_B438AA05E830 */

@@ -7,6 +7,10 @@ void tasker::Worker::OnMessage(const std::function<void(std::string)> &on_messag
     this->on_message = on_message;
 }
 
+const std::string &tasker::Worker::GetId() {
+    return this->id;
+}
+
 void tasker::Worker::Send(const std::string &cmd, const std::string &msg) const {
     std::string final_msg;
     final_msg.reserve(cmd.size() + 1 + id.size() + 1 + msg.size());
@@ -26,6 +30,10 @@ void tasker::Worker::Send(const std::string &cmd, const std::string &msg) const 
     socket->send(message, zmq::send_flags::none);
 }
 
+int64_t tasker::Worker::GetPingInterval() {
+    return this->ping_interval;
+}
+
 int tasker::Worker::Start(std::string &driver_address) {
     spdlog::info("Starting worker {}", this->id);
 
@@ -38,7 +46,7 @@ int tasker::Worker::Start(std::string &driver_address) {
     spdlog::info("Connecting to the driver at {}", driver_address);
     this->socket->connect(driver_address);
 
-    if (socket->connected()) {
+    if (this->socket->connected()) {
         spdlog::info("Connected to the server...");
     } else {
         spdlog::info("Not connected to the server...");
@@ -48,10 +56,27 @@ int tasker::Worker::Start(std::string &driver_address) {
     // sending join message
     Send(tasker::GetCommand(tasker::JOIN));
 
+    // wait for acknowldgement
+    zmq::message_t request;
+    socket->recv(request, zmq::recv_flags::none);
+    if (tasker::GetCommand(tasker::Commands::ACK).compare(request.to_string()) == 0) {
+        spdlog::info("Registration acknowledgement recieved from the driver");
+    } else {
+        spdlog::error("Invalid message received as the acknowledgement from the driver");
+        return 500;
+    }
+
+    // start pong thread
+    auto ping_thread = std::thread([&]() {
+        std::string ping_cmd = tasker::GetCommand(tasker::Commands::PING);
+        while (true) {
+            this->Send(ping_cmd, this->GetId());
+            std::this_thread::sleep_for(std::chrono::milliseconds(this->GetPingInterval()));
+        }
+    });
+
     // now start continuous listening
     while (true) {
-        zmq::message_t request;
-
         // receive a request from client
         spdlog::debug("Waiting for command..");
         socket->recv(request, zmq::recv_flags::none);
@@ -67,11 +92,10 @@ int tasker::Worker::Start(std::string &driver_address) {
         int status = -1;
         if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
             this->on_message(params);
-        } else if (tasker::GetCommand(tasker::Commands::ACK).compare(cmd) == 0) {
-            spdlog::info("Ack received for connection...");
         } else {
             spdlog::info("Unknown message : {}", msg);
         }
     }
+    ping_thread.join();
     return 0;
 }
