@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: clinet-ingress
+  namespace: default
+data:
+  5000: "default/tasker-server-client:5000"

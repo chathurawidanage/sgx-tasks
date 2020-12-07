@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: tasker
-          image: cwidanage/tasker:0.07
+          image: cwidanage/tasker:0.08
           command: ["/sgx-tasks/build/task"]
           args: ["tcp://tasker-server-worker:5050"]
           imagePullPolicy: Always

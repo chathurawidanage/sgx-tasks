@@ -22,6 +22,7 @@ std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &
 
                 // todo remove from ping map
                 this->workers_lock.unlock();
+                this->ping_lock.unlock();
                 return nullptr;
             }
         }
