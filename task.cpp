@@ -20,7 +20,7 @@ int main(int argc, char *argv[]) {
         worker.Send(cmd, resp);
     });
     std::string server_url = "tcp://localhost:5050";
-    if (argc == 3) {
+    if (argc == 2) {
         server_url = argv[1];
     }
     worker.Start(server_url);
