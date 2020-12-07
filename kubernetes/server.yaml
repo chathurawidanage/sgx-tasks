@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: tasker
-          image: cwidanage/tasker:0.01
+          image: cwidanage/tasker:0.05
           command: ["/sgx-tasks/build/server"]
           ports:
             - containerPort: 5000
