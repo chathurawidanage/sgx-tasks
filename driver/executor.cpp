@@ -5,6 +5,10 @@
 tasker::JobExecutor::JobExecutor(tasker::Driver &driver) : driver(driver) {
 }
 
+bool tasker::JobExecutor::HasWorker(std::string &worker_id) {
+    return this->all_workers.find(worker_id) != this->all_workers.end();
+}
+
 std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &to, std::string worker_type) {
     this->workers_lock.lock();
     if (!available_workers.empty()) {
@@ -14,11 +18,14 @@ std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &
         this->ping_lock.lock();
         auto ping_it = this->ping_times.find(allocated_worker->GetId());
         if (ping_it != this->ping_times.end()) {
-            int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+            int64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
             if (timestamp - ping_it->second > this->ping_timeout) {
-                spdlog::info("Dead worker detected. Removing {} from the available workers...", allocated_worker->GetId());
+                spdlog::info("Dead worker detected. Removing {} from the available workers...",
+                             allocated_worker->GetId());
+                spdlog::info("Timestamp : {}, Last Ping: {}", timestamp, ping_it->second);
                 // remove worker from avilable workers
                 available_workers.pop();
+                this->all_workers.erase(allocated_worker->GetId());
 
                 // todo remove from ping map
                 this->workers_lock.unlock();
@@ -46,12 +53,13 @@ std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &
 
 void tasker::JobExecutor::AddWorker(std::string &worker_id, std::string &worker_type) {
     this->workers_lock.lock();
+    this->all_workers.insert(worker_id);
     this->available_workers.push(std::make_shared<tasker::WorkerHandler>(worker_id, worker_type, driver));
     this->workers_lock.unlock();
 
     // consider this as the first ping
     this->ping_lock.lock();
-    int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+    int64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     this->ping_times.insert(std::make_pair<>(worker_id, timestamp));
     this->ping_lock.unlock();
 }
@@ -64,8 +72,12 @@ void tasker::JobExecutor::AddJob(std::shared_ptr<Job> job) {
 
 void tasker::JobExecutor::OnPing(std::string &from_worker) {
     this->ping_lock.lock();
-    int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
-    this->ping_times.insert(std::make_pair<>(from_worker, timestamp));
+    int64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    if (this->HasWorker(from_worker)) {
+        this->ping_times.insert(std::make_pair<>(from_worker, timestamp));
+    } else {
+        spdlog::warn("Ping received from an unknown worker...");
+    }
     this->ping_lock.unlock();
 }
 
@@ -92,7 +104,7 @@ void tasker::JobExecutor::IdentifyFailures() {
                 job_it->second->OnWorkerRevoked(worker_id);
 
                 // remove from the worker allocation and put it back to the queue, giving it more time to connect
-                this->worker_assignment.erase(worker_id);
+                worker_asg_it = this->worker_assignment.erase(worker_asg_it);
 
                 // remove it from the busy workers and putting back to the available queue
                 auto busy_it = this->busy_workers.find(worker_id);
@@ -120,10 +132,6 @@ void tasker::JobExecutor::Progress() {
         if (this->jobs.empty()) {
             // todo replace with condition variables and locks
             std::this_thread::sleep_for(std::chrono::seconds(10));
-            if (idle_count++ % 100 == 0) {  // temp code to limit idle message
-                idle_count = 0;
-                spdlog::info("No jobs to process....");
-            }
             continue;
         }
         this->jobs_lock.lock();

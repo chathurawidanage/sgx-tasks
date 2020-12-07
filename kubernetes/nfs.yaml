@@ -1,0 +1,24 @@
+kind: Pod
+apiVersion: v1
+metadata:
+  name: nfs-server-pod
+  labels:
+    role: nfs
+spec:
+  volumes:
+    - name: sharedfs
+      hostPath:
+        path: /shared
+  containers:
+    - name: nfs-server-container
+      image: erichough/nfs-server
+      securityContext:
+        privileged: true
+      args:
+        - /exports
+      volumeMounts:
+        - name: sharedfs
+          mountPath: /shared
+      env:
+        - name: NFS_EXPORT_0
+          value: "/shared *(rw,sync,no_subtree_check,fsid=0,no_root_squash)"

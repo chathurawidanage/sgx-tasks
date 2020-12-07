@@ -14,11 +14,20 @@ spec:
       labels:
         app: tasker-worker
     spec:
+      volumes:
+        - name: nfs-volume
+          nfs:
+            # URL for the NFS server
+            server: 10.99.73.22
+            path: /
       containers:
         - name: tasker
-          image: cwidanage/tasker:0.08
+          image: cwidanage/tasker:0.09
           command: ["/sgx-tasks/build/task"]
           args: ["tcp://tasker-server-worker:5050"]
+          volumeMounts:
+            - name: nfs-volume
+              mountPath: /data
           imagePullPolicy: Always
           resources:
             limits:

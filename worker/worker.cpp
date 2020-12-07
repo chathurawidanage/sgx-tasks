@@ -66,11 +66,11 @@ int tasker::Worker::Start(std::string &driver_address) {
         return 500;
     }
 
-    // start pong thread
+    // start ping thread
     auto ping_thread = std::thread([&]() {
         std::string ping_cmd = tasker::GetCommand(tasker::Commands::PING);
         while (true) {
-            this->Send(ping_cmd, this->GetId());
+            this->Send(ping_cmd);
             std::this_thread::sleep_for(std::chrono::milliseconds(this->GetPingInterval()));
         }
     });

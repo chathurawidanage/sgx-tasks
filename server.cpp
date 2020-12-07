@@ -49,6 +49,14 @@ class PartitionJob : public tasker::Job {
         driver.SendToClient(this->client_id, rsp_msg);
     }
 
+    void OnWorkerRevoked(std::string &worker_id) {
+        spdlog::info("Job notified about worker {} disconnection.", worker_id);
+        if (!this->job_done) {
+            this->worker = nullptr;
+        }
+        spdlog::info("After revoke func", worker_id);
+    }
+
     bool Progress() {
         if (worker == nullptr) {
             this->worker = driver.GetExecutor()->AllocateWorker(*this, "");
@@ -80,7 +88,6 @@ int main(int argc, char *argv[]) {
 
     driver.SetOnWorkerJoined([&driver](std::string &worker_id, std::string &worker_type) {
         spdlog::info("Worker joined : {}", worker_id);
-        driver.GetExecutor()->AddWorker(worker_id, worker_type);
     });
 
     driver.SetOnClientConnected([](std::string &client_id, std::string &client_meta) {
