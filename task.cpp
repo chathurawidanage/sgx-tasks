@@ -40,21 +40,21 @@ int main(int argc, char *argv[]) {
 
                 auto results = options.parse(args.size(), args.data());
 
-                std::string src_file = results["s"].as<std::string>();
-                std::string dst_folder = results["d"].as<std::string>();
+                std::string src_file = root_dir + results["s"].as<std::string>();
+                std::string dst_folder = root_dir + results["d"].as<std::string>();
                 int32_t partitions = results["p"].as<std::int32_t>();
 
                 // check source file exists
-                if (!std::filesystem::exists(root_dir + src_file)) {
+                if (!std::filesystem::exists(src_file)) {
                     resp.append("File " + src_file + " doesn't exists");
                     worker.Send(cmd, resp);
                     return;
                 }
 
-                spdlog::info("Creating output directories {}", root_dir + dst_folder);
+                spdlog::info("Creating output directories {}", dst_folder);
 
                 // check output directory exists
-                std::filesystem::create_directories(root_dir + dst_folder);
+                std::filesystem::create_directories(dst_folder);
 
                 spdlog::info("Command : p : {}, s: {}, d: {}", results["p"].as<int32_t>(), results["s"].as<std::string>(), results["d"].as<std::string>());
 
