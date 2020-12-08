@@ -66,7 +66,7 @@ def main():
     nSplit = 12
     if len(sys.argv) > 1:
         nSplit = int(sys.argv[2])
-    splitDida(fname, nSplit, 100)
+    splitDida(fname, nSplit, out_dir, 100)
 
 
 if __name__ == "__main__":
