@@ -33,8 +33,7 @@ void tasker::Driver::Send(std::shared_ptr<zmq::socket_t> socket, const std::stri
     } catch (zmq::error_t &ex) {
         spdlog::error("Error in sending the message to the destination {}. Cause : {} {}", to, ex.what(), ex.num());
         if (ex.num() == 113) {  // host unreachable
-            
-        }
+                }
     }
 }
 
@@ -96,7 +95,7 @@ void tasker::Driver::StartHandler(int32_t port,
                 this->executor->ForwardMsgToJob(id, rcvd_msg);
             }
         } else if (tasker::GetCommand(tasker::Commands::PING).compare(cmd) == 0) {
-            spdlog::info("Ping received from {}", params);
+            spdlog::debug("Ping received from {}", params);
             if (on_ping != nullptr) {
                 on_ping(params);
             }
