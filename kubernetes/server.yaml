@@ -14,6 +14,12 @@ spec:
       labels:
         app: tasker-server
     spec:
+      volumes:
+        - name: nfs-volume
+          nfs:
+            # URL for the NFS server
+            server: 10.99.73.22
+            path: /
       containers:
         - name: tasker
           image: cwidanage/tasker:0.09
@@ -22,6 +28,9 @@ spec:
             - containerPort: 5000
             - containerPort: 5050
           args: []
+          volumeMounts:
+            - name: nfs-volume
+              mountPath: /data
           imagePullPolicy: Always
           resources:
             limits:

@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(sgx-tasks)
 
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(PkgConfig)
 pkg_check_modules(PC_ZeroMQ QUIET zmq)

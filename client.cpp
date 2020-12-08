@@ -89,13 +89,13 @@ class Client {
             std::string cmd = msg.substr(0, 3);
             std::string params = "";
 
-            if (cmd.size() > 3) {
+            if (msg.size() > 3) {
                 params = msg.substr(4, msg.length());
             }
 
             int status = -1;
             if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
-                std::cout << "Message : " << msg << std::endl;
+                std::cout << params << std::endl;
             } else {
                 std::cout << "Unknown message : " << msg << std::endl;
             }
