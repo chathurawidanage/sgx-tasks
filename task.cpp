@@ -12,12 +12,22 @@ int main(int argc, char *argv[]) {
     worker.OnMessage([&worker](std::string msg) {
         spdlog::info("Message received from server : {}", msg);
         std::string cmd = tasker::GetCommand(tasker::Commands::MESSAGE);
+        std::string resp = "";
 
-        spdlog::info("Waiting 10 seconds to simulate work...");
-
-        std::string resp = "Partitioning done!";
-        std::this_thread::sleep_for(std::chrono::seconds(10));
-        worker.Send(cmd, resp);
+        std::istringstream commnad(msg);
+        vector<string> tokens{istream_iterator<string>{commnad},
+                              istream_iterator<string>{}};
+        if (tokens[0].compare("prt") == 0) {
+            std::string sys_command = "python3 /bio-sgx/split.py " + tokens[3] + " " + tokens[4] + " " + tokens[5];
+            spdlog::info("Executing command {}", sys_command);
+            int status = system(sys_command.c_str());
+            resp.append(std::to_string(status));
+            worker.Send(cmd, resp);
+        } else {
+            resp.append(" Unknown command ");
+            resp.append(tokens[0]);
+            worker.Send(cmd, resp);
+        }
     });
     std::string server_url = "tcp://localhost:5050";
     if (argc == 2) {

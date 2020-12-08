@@ -29,7 +29,7 @@ class JobExecutor {
     tasker::Driver &driver;
 
     // pring timeout
-    int64_t ping_timeout = 30;
+    int64_t ping_timeout = 60;
 
     void Progress();
 
