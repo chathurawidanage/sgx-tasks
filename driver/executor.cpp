@@ -74,7 +74,11 @@ void tasker::JobExecutor::OnPing(std::string &from_worker) {
     this->ping_lock.lock();
     int64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     if (this->HasWorker(from_worker)) {
-        this->ping_times.insert(std::make_pair<>(from_worker, timestamp));
+        if (this->ping_times.find(from_worker) == this->ping_times.end()) {
+            this->ping_times.insert(std::make_pair<>(from_worker, timestamp));
+        } else {
+            this->ping_times[from_worker] = timestamp;
+        }
     } else {
         spdlog::warn("Ping received from an unknown worker...");
     }
