@@ -51,6 +51,8 @@ int main(int argc, char *argv[]) {
                     return;
                 }
 
+                spdlog::info("Creating output directories {}", root_dir + dst_folder);
+
                 // check output directory exists
                 std::filesystem::create_directories(root_dir + dst_folder);
 
