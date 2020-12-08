@@ -52,7 +52,7 @@ int main(int argc, char *argv[]) {
                 }
 
                 // check output directory exists
-                std::filesystem::create_directories(dst_folder);
+                std::filesystem::create_directories(root_dir + dst_folder);
 
                 spdlog::info("Command : p : {}, s: {}, d: {}", results["p"].as<int32_t>(), results["s"].as<std::string>(), results["d"].as<std::string>());
 
