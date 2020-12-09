@@ -64,6 +64,7 @@ int main(int argc, char *argv[]) {
                 resp.append(std::to_string(status));
                 resp.append(" ");
                 worker.Send(cmd, resp);
+                spdlog::info("Sent response to driver {}", resp);
             } catch (cxxopts::option_has_no_value_exception &err) {
                 std::string erros_msg = "Invalid command for partitioning : ";
                 erros_msg.append(err.what());

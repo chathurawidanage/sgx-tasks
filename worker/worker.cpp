@@ -26,7 +26,7 @@ void tasker::Worker::Send(const std::string &cmd, const std::string &msg) const 
     zmq::message_t message(final_msg.size());
     std::memcpy(message.data(), final_msg.data(), final_msg.size());
 
-    spdlog::debug("Sending message : {}", message.to_string());
+    spdlog::info("Sending message : {}", message.to_string());
     socket->send(message, zmq::send_flags::none);
 }
 
