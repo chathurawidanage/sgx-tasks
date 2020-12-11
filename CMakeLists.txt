@@ -26,6 +26,8 @@ endif()
 add_subdirectory(common)
 include_directories(common/include)
 
+include_directories(.)
+
 # Driver executable
 add_subdirectory(driver)
 include_directories(driver/include)

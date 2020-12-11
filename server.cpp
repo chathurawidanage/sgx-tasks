@@ -7,6 +7,7 @@
 #include <thread>
 #include <unordered_map>
 
+#include "commands.hpp"
 #include "driver.hpp"
 #include "executor.hpp"
 #include "job.hpp"
@@ -15,11 +16,19 @@
 #include "uuid.hpp"
 #include "worker_handler.hpp"
 
+std::string root_dir = get_root();
+
 void decode_response(std::string &rsp, std::string *cmd, int32_t *error_code, std::string *msg) {
-    std::string command_prt = rsp.substr(0, 3);
-    std::string err_code = rsp.substr(4, rsp.find(' ', 5));
-    *msg = rsp.substr(3 + err_code.size() + 2, rsp.size());
-    err_code = std::stoi(err_code);
+    *cmd = rsp.substr(0, 3);
+    std::string err_code = rsp.substr(4, rsp.find(' ', 5) - 4);
+    *error_code = std::stoi(err_code);
+
+    int32_t msg_start = 5 + err_code.size();
+    if (msg_start != -1) {
+        *msg = rsp.substr(msg_start, rsp.size());
+    } else {
+        *msg = "";
+    }
 }
 
 class IndexJob : public tasker::Job {
@@ -41,7 +50,8 @@ class IndexJob : public tasker::Job {
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
 
-                std::string command = "bwa mem";
+                std::string command = "bwa mem ";
+                command.append(this->input_file);
 
                 spdlog::info("Sending command to worker {}", command);
                 this->worker->Send(command);
@@ -67,14 +77,18 @@ class PartitionJob : public tasker::Job {
     std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
     std::string commnd;
 
-    bool job_done = false;
+    std::string dst_directory;
 
-    int retries = 0;
+    bool job_done = false;
 
    public:
     PartitionJob(std::string command, std::string job_id, std::string client_id,
                  tasker::Driver &driver) : Job(job_id, client_id, driver) {
         this->commnd = command;
+
+        std::string source_dir;
+        int32_t partitions;
+        parse_parition_command(command, root_dir, &source_dir, &dst_directory, &partitions);
     }
 
     void OnWorkerMessage(std::string &worker_id, std::string &rsp) {
@@ -84,7 +98,10 @@ class PartitionJob : public tasker::Job {
         std::string cmd, msg;
         decode_response(rsp, &cmd, &error_code, &msg);
 
-        spdlog::info("Decoded message from worker {} {}", error_code, msg);
+        if (error_code != 0) {
+            spdlog::warn("Error reported from worker {}", error_code);
+        }
+
         this->job_done = true;
 
         // sending the message back to the client
