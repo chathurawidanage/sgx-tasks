@@ -9,6 +9,17 @@
 #include "uuid.hpp"
 #include "worker.hpp"
 
+std::string create_response(int32_t error_code, std::string msg = "") {
+    std::string rsp;
+    rsp.append("MSG ");
+    rsp.append(std::to_string(error_code));
+    if (msg.size() > 0) {
+        rsp.append(" ");
+        rsp.append(msg);
+    }
+    return rsp;
+}
+
 int main(int argc, char *argv[]) {
     std::string root_dir = "";
     if (std::getenv("ENV_ROOT_PATH") != nullptr) {
@@ -21,7 +32,6 @@ int main(int argc, char *argv[]) {
     worker.OnMessage([&worker, &root_dir](std::string msg) {
         spdlog::info("Message received from server : {}", msg);
         std::string cmd = tasker::GetCommand(tasker::Commands::MESSAGE);
-        std::string resp = "";
 
         std::istringstream commnad(msg);
         vector<std::string> tokens{istream_iterator<string>{commnad},
@@ -46,7 +56,7 @@ int main(int argc, char *argv[]) {
 
                 // check source file exists
                 if (!std::filesystem::exists(src_file)) {
-                    resp.append("File " + src_file + " doesn't exists");
+                    std::string resp = create_response(404, "File " + src_file + " doesn't exists");
                     worker.Send(cmd, resp);
                     return;
                 }
@@ -61,22 +71,20 @@ int main(int argc, char *argv[]) {
                 std::string sys_command = "python3 /bio-sgx/split.py " + src_file + " " + std::to_string(partitions) + " " + dst_folder;
                 spdlog::info("Executing command {}", sys_command);
                 int status = system(sys_command.c_str());
-                resp.append(std::to_string(status));
-                resp.append(" ");
+
+                std::string resp = create_response(status);
                 worker.Send(cmd, resp);
                 spdlog::info("Sent response to driver {}", resp);
             } catch (cxxopts::option_has_no_value_exception &err) {
-                std::string erros_msg = "Invalid command for partitioning : ";
-                erros_msg.append(err.what());
-                spdlog::error(erros_msg);
-                resp.append("500");
-                resp.append(" ");
-                resp.append(erros_msg);
+                std::string error_msg = "Invalid command for partitioning : ";
+                error_msg.append(err.what());
+                spdlog::error(error_msg);
+
+                std::string resp = create_response(500, error_msg);
                 worker.Send(cmd, resp);
             }
         } else {
-            resp.append(" Unknown command ");
-            resp.append(tokens[0]);
+            std::string resp = create_response(404, "Unknown command " + tokens[0]);
             worker.Send(cmd, resp);
         }
     });

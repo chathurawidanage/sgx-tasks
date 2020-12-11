@@ -65,9 +65,9 @@ void tasker::JobExecutor::AddWorker(std::string &worker_id, std::string &worker_
 }
 
 void tasker::JobExecutor::AddJob(std::shared_ptr<Job> job) {
-    jobs_lock.lock();
+    this->jobs_lock.lock();
     this->jobs.insert(std::make_pair<>(job->GetId(), job));
-    jobs_lock.unlock();
+    this->jobs_lock.unlock();
 }
 
 void tasker::JobExecutor::OnPing(std::string &from_worker) {
@@ -90,7 +90,8 @@ void tasker::JobExecutor::IdentifyFailures() {
     this->ping_lock.lock();
     this->workers_lock.lock();
     this->jobs_lock.lock();
-    int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+    int64_t timestamp = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+
     // check for deadworkers in the already allocated workers
     auto worker_asg_it = this->worker_assignment.begin();
     while (worker_asg_it != this->worker_assignment.end()) {
@@ -141,7 +142,7 @@ void tasker::JobExecutor::Progress() {
         this->jobs_lock.lock();
         std::unordered_map<std::string, std::shared_ptr<Job>>::iterator i = this->jobs.begin();
         while (i != this->jobs.end()) {
-            spdlog::info("Processing job {}", i->second->GetId());
+            spdlog::debug("Processing job {}", i->second->GetId());
             bool done = i->second->Progress();
             if (done) {
                 spdlog::info("Job {} has been reported as done", i->second->GetId());
@@ -152,7 +153,7 @@ void tasker::JobExecutor::Progress() {
             }
         }
         this->jobs_lock.unlock();
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        //std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 }
 

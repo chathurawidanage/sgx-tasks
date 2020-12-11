@@ -10,17 +10,53 @@
 #include "driver.hpp"
 #include "executor.hpp"
 #include "job.hpp"
+#include "messages.hpp"
 #include "spdlog/spdlog.h"
 #include "uuid.hpp"
 #include "worker_handler.hpp"
 
+void decode_response(std::string &rsp, std::string *cmd, int32_t *error_code, std::string *msg) {
+    std::string command_prt = rsp.substr(0, 3);
+    std::string err_code = rsp.substr(4, rsp.find(' ', 5));
+    *msg = rsp.substr(3 + err_code.size() + 2, rsp.size());
+    err_code = std::stoi(err_code);
+}
+
 class IndexJob : public tasker::Job {
-    std::string commnd;
+    std::string input_file;
+    std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
+    bool job_done = false;
 
    public:
-    IndexJob(std::string command, std::string job_id, std::string client_id,
+    IndexJob(std::string input_file,
+             std::string job_id,
+             std::string client_id,
              tasker::Driver &driver) : Job(job_id, client_id, driver) {
-        this->commnd = command;
+        this->input_file = input_file;
+    }
+
+    bool progress() {
+        if (worker == nullptr) {
+            this->worker = driver.GetExecutor()->AllocateWorker(*this, "");
+            if (this->worker != nullptr) {
+                spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
+
+                std::string command = "bwa mem";
+
+                spdlog::info("Sending command to worker {}", command);
+                this->worker->Send(command);
+            } else {
+                spdlog::info("Couldn't get a worker allocated for job {}", this->job_id);
+            }
+        }
+        return this->job_done;
+    }
+
+    void Finalize() {
+        spdlog::info("Finalizing job {}", this->job_id);
+        if (this->worker != nullptr) {
+            driver.GetExecutor()->ReleaseWorker(*this, this->worker);
+        }
     }
 };
 
@@ -33,20 +69,26 @@ class PartitionJob : public tasker::Job {
 
     bool job_done = false;
 
+    int retries = 0;
+
    public:
     PartitionJob(std::string command, std::string job_id, std::string client_id,
                  tasker::Driver &driver) : Job(job_id, client_id, driver) {
         this->commnd = command;
     }
 
-    void OnWorkerMessage(std::string &worker_id, std::string &msg) {
-        spdlog::info("Message from worker {}, {}", worker_id, msg);
+    void OnWorkerMessage(std::string &worker_id, std::string &rsp) {
+        spdlog::info("Message from worker {}, {}", worker_id, rsp);
+
+        int32_t error_code;
+        std::string cmd, msg;
+        decode_response(rsp, &cmd, &error_code, &msg);
+
+        spdlog::info("Decoded message from worker {} {}", error_code, msg);
         this->job_done = true;
 
         // sending the message back to the client
-        std::string rsp_msg;
-        rsp_msg.append("MSG ").append(msg);
-        driver.SendToClient(this->client_id, rsp_msg);
+        driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
     }
 
     void OnWorkerRevoked(std::string &worker_id) {

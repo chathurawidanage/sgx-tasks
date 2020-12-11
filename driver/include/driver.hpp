@@ -38,8 +38,22 @@ class Driver {
         return this->executor;
     }
 
+    void SendToClient(const std::string &to, const std::string &cmd, const std::string &msg) const {
+        std::string final_message = cmd;
+        final_message.append(" ");
+        final_message.append(msg);
+        this->Send(this->client_socket, to, final_message);
+    }
+
     void SendToClient(const std::string &to, const std::string &msg) const {
         this->Send(this->client_socket, to, msg);
+    }
+
+    void SendToWorker(const std::string &to, const std::string &cmd, const std::string &msg) const {
+        std::string final_message = cmd;
+        final_message.append(" ");
+        final_message.append(msg);
+        this->Send(this->worker_socket, to, final_message);
     }
 
     void SendToWorker(const std::string &to, const std::string &msg) const {

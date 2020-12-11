@@ -33,7 +33,7 @@ void tasker::Driver::Send(std::shared_ptr<zmq::socket_t> socket, const std::stri
     } catch (zmq::error_t &ex) {
         spdlog::error("Error in sending the message to the destination {}. Cause : {} {}", to, ex.what(), ex.num());
         if (ex.num() == 113) {  // host unreachable
-                }
+        }
     }
 }
 
@@ -61,6 +61,7 @@ void tasker::Driver::StartHandler(int32_t port,
         spdlog::debug("Blocking for a message...");
 
         socket->recv(request, zmq::recv_flags::none);
+
         spdlog::debug("Recvd message : {}", request.to_string());
 
         std::string msg = request.to_string();
@@ -101,7 +102,7 @@ void tasker::Driver::StartHandler(int32_t port,
             }
         } else {
             // this could be a pending join
-            // spdlog::info("Unknown message : {}", request.to_string());
+            //spdlog::info("Unknown message : {}", request.to_string());
         }
     }
 }
