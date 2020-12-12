@@ -29,7 +29,7 @@ void decode_response(std::string &rsp, std::string *cmd, int32_t *error_code, st
     } else {
         *msg = "";
         if (*error_code != 0) {
-            *msg = "Unknown error occurred";
+            *msg = "Unknown error occurred. Error code " + err_code;
         } else {
             *msg = "";
         }
