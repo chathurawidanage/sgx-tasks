@@ -31,9 +31,7 @@ int main(int argc, char *argv[]) {
                 spdlog::info("Handling partition command...");
 
                 auto partition_command = PartitionCommand(msg);
-                partition_command.parse();
-
-                partition_command.validate(&validation_code, &validation_msg);
+                partition_command.Parse(&validation_code, &validation_msg);
 
                 if (validation_code != 0) {
                     worker.Send(msg_cmd, validation_msg);

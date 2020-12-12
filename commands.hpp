@@ -39,17 +39,30 @@ void tokenize(std::string &cmd, std::shared_ptr<std::vector<const char *>> &args
     });
 }
 
-class PartitionCommand : tasker::Command {
+class PartitionCommand : public tasker::Command {
    private:
     std::string src_file;
     std::string dst_folder;
     int32_t partitions;
 
+    void Validate(int32_t *code, std::string *msg) {
+        // check source file exists
+        if (!std::filesystem::exists(src_file)) {
+            *msg = create_response(404, "File " + src_file + " doesn't exists");
+            *code = 404;
+        } else {
+            *code = 0;
+
+            spdlog::info("Creating output directories {}", dst_folder);
+            std::filesystem::create_directories(dst_folder);
+        }
+    }
+
    public:
     PartitionCommand(std::string &cmd) : tasker::Command(cmd) {
     }
 
-    void parse() {
+    void Parse(int32_t *code, std::string *msg) {
         std::shared_ptr<std::vector<const char *>> args;
         tokenize(this->command, args);
 
@@ -63,19 +76,8 @@ class PartitionCommand : tasker::Command {
         this->src_file = root_dir + results["s"].as<std::string>();
         this->dst_folder = root_dir + results["d"].as<std::string>();
         this->partitions = results["p"].as<std::int32_t>();
-    }
 
-    void validate(int32_t *code, std::string *msg) {
-        // check source file exists
-        if (!std::filesystem::exists(src_file)) {
-            *msg = create_response(404, "File " + src_file + " doesn't exists");
-            *code = 404;
-        } else {
-            *code = 0;
-
-            spdlog::info("Creating output directories {}", dst_folder);
-            std::filesystem::create_directories(dst_folder);
-        }
+        this->Validate(code, msg);
     }
 
     std::string &GetSrcFile() {

@@ -75,20 +75,23 @@ class IndexJob : public tasker::Job {
  * */
 class PartitionJob : public tasker::Job {
     std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
-    std::string commnd;
 
-    std::string dst_directory;
+    PartitionCommand *partition_command;  //todo delete
 
     bool job_done = false;
 
    public:
     PartitionJob(std::string command, std::string job_id, std::string client_id,
                  tasker::Driver &driver) : Job(job_id, client_id, driver) {
-        this->commnd = command;
+        std::string validation_msg;
+        int32_t validation_code;
+        partition_command = new PartitionCommand(command);
+        partition_command->Parse(&validation_code, &validation_msg);
 
-        std::string source_dir;
-        int32_t partitions;
-        parse_parition_command(command, root_dir, &source_dir, &dst_directory, &partitions);
+        if (validation_code != 0) {
+            driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
+            this->job_done = true;
+        }
     }
 
     void OnWorkerMessage(std::string &worker_id, std::string &rsp) {
@@ -117,13 +120,13 @@ class PartitionJob : public tasker::Job {
     }
 
     bool Progress() {
-        if (worker == nullptr) {
+        if (worker == nullptr && !this->job_done) {
             this->worker = driver.GetExecutor()->AllocateWorker(*this, "");
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
 
-                spdlog::info("Sending command to worker {}", this->commnd);
-                this->worker->Send(this->commnd);
+                spdlog::info("Sending command to worker {}", this->partition_command->GetCommand());
+                this->worker->Send(this->partition_command->GetCommand());
             } else {
                 spdlog::info("Couldn't get a worker allocated for job {}", this->job_id);
             }
@@ -136,6 +139,10 @@ class PartitionJob : public tasker::Job {
         if (this->worker != nullptr) {
             driver.GetExecutor()->ReleaseWorker(*this, this->worker);
         }
+    }
+
+    ~PartitionJob() {
+        delete this->partition_command;
     }
 };
 
