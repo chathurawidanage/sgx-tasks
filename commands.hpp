@@ -59,7 +59,7 @@ class PartitionCommand : public tasker::Command {
     }
 
    public:
-    PartitionCommand(std::string &cmd) : tasker::Command(cmd) {
+    PartitionCommand(std::string cmd) : tasker::Command(cmd) {
     }
 
     void Parse(int32_t *code, std::string *msg) {

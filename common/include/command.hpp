@@ -6,12 +6,12 @@
 namespace tasker {
 class Command {
    protected:
-    std::string& command;
+    std::string command;
 
     virtual void Validate(int32_t* code, std::string* msg) = 0;
 
    public:
-    Command(std::string& command) : command(command) {
+    Command(std::string command) : command(command) {
     }
 
     std::string& GetCommand() {

@@ -24,10 +24,15 @@ void decode_response(std::string &rsp, std::string *cmd, int32_t *error_code, st
     *error_code = std::stoi(err_code);
 
     int32_t msg_start = 5 + err_code.size();
-    if (msg_start != -1) {
+    if (msg_start < rsp.size()) {
         *msg = rsp.substr(msg_start, rsp.size());
     } else {
         *msg = "";
+        if (*error_code != 0) {
+            *msg = "Unknown error occurred";
+        } else {
+            *msg = "";
+        }
     }
 }
 
