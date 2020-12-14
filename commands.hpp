@@ -53,8 +53,8 @@ class PartitionCommand : public tasker::Command {
         } else {
             *code = 0;
 
-            spdlog::info("Creating output directories {}", dst_folder);
-            std::filesystem::create_directories(dst_folder);
+            spdlog::info("Creating output directories {}", this->dst_folder);
+            std::filesystem::create_directories(this->dst_folder);
         }
     }
 

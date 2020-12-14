@@ -71,7 +71,7 @@ class IndexJob : public tasker::Job {
                 spdlog::info("Sending command to worker {}", this->index_command->GetCommand());
                 this->worker->Send(this->index_command->GetCommand());
             } else {
-                spdlog::info("Couldn't get a worker allocated for job {}", this->job_id);
+                spdlog::debug("Couldn't get a worker allocated for job {}", this->job_id);
             }
         }
         return this->job_done;
@@ -164,7 +164,7 @@ class PartitionJob : public tasker::Job {
                 spdlog::info("Sending command to worker {}", this->partition_command->GetCommand());
                 this->worker->Send(this->partition_command->GetCommand());
             } else {
-                spdlog::info("Couldn't get a worker allocated for job {}", this->job_id);
+                spdlog::debug("Couldn't get a worker allocated for job {}", this->job_id);
             }
         }
         return this->job_done;
