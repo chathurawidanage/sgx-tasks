@@ -116,7 +116,7 @@ class PartitionJob : public tasker::Job {
             std::string input_file_name = std::filesystem::path(temp_index_cmd.GetSrcFile()).filename();
             // create a random index id
             std::string index_id = "index_" + input_file_name + "_" + std::to_string(temp_index_cmd.GetPartitions());
-            std::string p_cmd = "prt -s " + temp_index_cmd.GetSrcFile() + " -p " + std::to_string(temp_index_cmd.GetPartitions()) + " -d " + index_id;
+            std::string p_cmd = "prt -s " + temp_index_cmd.GetRelativeSrcFile() + " -p " + std::to_string(temp_index_cmd.GetPartitions()) + " -d " + index_id;
 
             spdlog::info("Generated partition command : {}", p_cmd);
 

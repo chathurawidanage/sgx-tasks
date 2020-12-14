@@ -22,19 +22,22 @@ spec:
             path: /
       containers:
         - name: tasker
-          image: cwidanage/tasker:0.12
+          image: cwidanage/tasker:0.16
           command: ["/sgx-tasks/build/server"]
           ports:
             - containerPort: 5000
             - containerPort: 5050
           args: []
+          env:
+            - name: ENV_ROOT_PATH
+              value: "/data/"
           volumeMounts:
             - name: nfs-volume
               mountPath: /data
           imagePullPolicy: Always
           resources:
             limits:
-              cpu: 4
+              cpu: 1
               memory: 5G
 ---
 kind: Service

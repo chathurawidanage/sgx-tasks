@@ -132,6 +132,7 @@ class IndexCommand : public tasker::Command {
 class ClientIndexCommand : public tasker::Command {
    private:
     std::string src_file;
+    std::string relative_src_file;
     int32_t partitions;
 
     void Validate(int32_t *code, std::string *msg) {
@@ -159,12 +160,17 @@ class ClientIndexCommand : public tasker::Command {
         std::string root_dir = get_root();
 
         this->src_file = root_dir + results["s"].as<std::string>();
+        this->relative_src_file = results["s"].as<std::string>();
         this->partitions = results["p"].as<std::int32_t>();
         this->Validate(code, msg);
     }
 
     std::string &GetSrcFile() {
         return this->src_file;
+    }
+
+    std::string &GetRelativeSrcFile() {
+        return this->relative_src_file;
     }
 
     int32_t &GetPartitions() {
