@@ -90,6 +90,14 @@ class IndexJob : public tasker::Job {
         driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
     }
 
+    void OnWorkerRevoked(std::string &worker_id) {
+        spdlog::info("Job notified about worker {} disconnection.", worker_id);
+        if (!this->job_done) {
+            this->worker = nullptr;
+        }
+        spdlog::info("After revoke func", worker_id);
+    }
+
     bool Progress() {
         if (worker == nullptr) {
             this->worker = driver.GetExecutor()->AllocateWorker(*this, "");

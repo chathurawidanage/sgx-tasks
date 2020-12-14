@@ -14,7 +14,7 @@ class Driver;
 class JobExecutor {
    private:
     std::unordered_map<std::string, std::shared_ptr<Job>> jobs{};
-    std::mutex jobs_lock{};
+    std::recursive_mutex jobs_lock{};
 
     std::set<std::string> all_workers{};
     std::queue<std::shared_ptr<tasker::WorkerHandler>> available_workers{};
