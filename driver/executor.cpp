@@ -64,14 +64,12 @@ void tasker::JobExecutor::AddWorker(std::string &worker_id, std::string &worker_
     this->ping_lock.unlock();
 }
 
-void tasker::JobExecutor::AddJob(std::shared_ptr<Job> job, bool no_lock) {
-    // TODO No lock is a hack
-    if (no_lock) {
-        this->jobs.insert(std::make_pair<>(job->GetId(), job));
-    } else {
-        this->jobs_lock.lock();
+void tasker::JobExecutor::AddJob(std::shared_ptr<Job> job) {
+    if (this->jobs_lock.try_lock()) {
         this->jobs.insert(std::make_pair<>(job->GetId(), job));
         this->jobs_lock.unlock();
+    } else {
+        this->jobs_temp.insert(std::make_pair<>(job->GetId(), job));
     }
 }
 
@@ -134,10 +132,23 @@ void tasker::JobExecutor::IdentifyFailures() {
     this->jobs_lock.unlock();
 }
 
+void tasker::JobExecutor::AddTempJob() {
+    this->jobs_lock.lock();
+
+    auto temp_jobs_it = this->jobs_temp.begin();
+    while (temp_jobs_it != this->jobs_temp.end()) {
+        this->jobs.insert(*temp_jobs_it);
+        this->jobs_temp.erase(temp_jobs_it);
+    }
+
+    this->jobs_lock.unlock();
+}
+
 void tasker::JobExecutor::Progress() {
     int32_t idle_count = 0;
     while (true) {
         this->IdentifyFailures();
+        this->AddTempJob();
 
         if (this->jobs.empty()) {
             // todo replace with condition variables and locks

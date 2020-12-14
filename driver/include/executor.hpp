@@ -14,7 +14,9 @@ class Driver;
 class JobExecutor {
    private:
     std::unordered_map<std::string, std::shared_ptr<Job>> jobs{};
-    std::recursive_mutex jobs_lock{};
+    std::mutex jobs_lock{};
+
+    std::unordered_map<std::string, std::shared_ptr<Job>> jobs_temp{};
 
     std::set<std::string> all_workers{};
     std::queue<std::shared_ptr<tasker::WorkerHandler>> available_workers{};
@@ -35,10 +37,12 @@ class JobExecutor {
 
     void IdentifyFailures();
 
+    void AddTempJob();
+
    public:
     JobExecutor(tasker::Driver &driver);
 
-    void AddJob(std::shared_ptr<Job> job, bool no_lock = false);
+    void AddJob(std::shared_ptr<Job> job);
 
     void AddWorker(std::string &worker_id, std::string &worker_type);
 

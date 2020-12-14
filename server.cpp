@@ -85,9 +85,6 @@ class IndexJob : public tasker::Job {
 
         // calling the callback
         this->on_complete(this->partition_idx, error_code, msg);
-
-        // sending the message back to the client
-        driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
     }
 
     void OnWorkerRevoked(std::string &worker_id) {
@@ -212,11 +209,24 @@ class PartitionJob : public tasker::Job {
     void Finalize() {
         spdlog::info("Finalizing job {}", this->job_id);
         if (this->worker != nullptr) {
-            driver.GetExecutor()->ReleaseWorker(*this, this->worker);
+            this->driver.GetExecutor()->ReleaseWorker(*this, this->worker);
         }
 
         // now schedule index jobs
         if (this->error_code == 0) {
+            int32_t *index_counter = new int32_t;
+            *index_counter = 0;
+
+            int32_t *total_jobs = new int32_t;
+            *total_jobs = this->partition_command->GetPartitions();
+
+            bool *faile_job = new bool;
+            *faile_job = false;
+
+            tasker::Driver *driver_ptr = &driver;
+            std::string *clinet_id_ptr = &client_id;
+            std::string *index_id_ptr = &index_id;
+
             spdlog::info("Creating indexing jobs for {} partitions.", this->partition_command->GetPartitions());
             for (int32_t idx = 0; idx < this->partition_command->GetPartitions(); idx++) {
                 std::string idx_src = this->index_id + "/mref-" + std::to_string(idx + 1) + ".fa";
@@ -225,13 +235,42 @@ class PartitionJob : public tasker::Job {
                 std::shared_ptr<IndexJob> prt_job = std::make_shared<IndexJob>(
                     idx_src, job_id,
                     idx,
-                    [](int32_t idx, int32_t error_code, std::string msg) {
+                    [&index_counter, &driver_ptr, &clinet_id_ptr, &faile_job, &total_jobs, &index_id_ptr](int32_t idx, int32_t error_code, std::string msg) {
                         spdlog::info("Indexing done for {} {} {}", idx, error_code, msg);
+                        *index_counter++;
+                        if (error_code == 0) {
+                            spdlog::info("Indexing completed for {}", *index_counter);
+                        } else {
+                            // one has failed indexing
+                            // TODO remove other jobs to prevent wasting resources
+                            *faile_job = true;
+                            std::string error_msg = "Indexing failed for partition " + std::to_string(idx) + ". " + msg;
+                            driver_ptr->SendToClient(*clinet_id_ptr, tasker::GetCommand(tasker::Commands::MESSAGE), error_msg);
+                        }
+
+                        if (*index_counter == *total_jobs) {
+                            spdlog::info("All indexing jobs have been completed.");
+                            if (!(*faile_job)) {
+                                driver_ptr->SendToClient(*clinet_id_ptr, tasker::GetCommand(tasker::Commands::MESSAGE),
+                                                         "Indexing completed and assigned ID " + (*index_id_ptr));
+                            } else {
+                                spdlog::warn("At least one of the indexing jobs has failed...");
+                                // TODO cleanup out directories
+                            }
+
+                            // delete variables
+                            delete index_counter;
+                            delete total_jobs;
+                            delete faile_job;
+                            delete driver_ptr;
+                            delete clinet_id_ptr;
+                            delete index_id_ptr;
+                        }
                     },
                     client_id,
                     driver);
                 spdlog::info("Created index job for partition {}", idx + 1);
-                driver.GetExecutor()->AddJob(prt_job, true);
+                driver.GetExecutor()->AddJob(prt_job);
             }
         } else {
             spdlog::info("Partition job has failed. Not scheduling index jobs");
