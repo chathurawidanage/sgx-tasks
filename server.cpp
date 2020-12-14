@@ -41,15 +41,21 @@ class IndexJob : public tasker::Job {
     std::string input_file;
     std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
     bool job_done = false;
+    int32_t partition_idx;
+    std::function<void(int32_t, int32_t, std::string)> on_complete;
 
     IndexCommand *index_command;  //todo delete
 
    public:
     IndexJob(std::string input_file,
              std::string job_id,
+             int32_t partition_idx,
+             std::function<void(int32_t, int32_t, std::string)> on_complete,
              std::string client_id,
              tasker::Driver &driver) : Job(job_id, client_id, driver) {
         this->input_file = input_file;
+        this->partition_idx = partition_idx;
+        this->on_complete = on_complete;
 
         std::string validation_msg;
         int32_t validation_code;
@@ -62,6 +68,26 @@ class IndexJob : public tasker::Job {
             driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
             this->job_done = true;
         }
+    }
+
+    void OnWorkerMessage(std::string &worker_id, std::string &rsp) {
+        spdlog::info("Message from worker {}, {}", worker_id, rsp);
+
+        int32_t error_code;
+        std::string cmd, msg;
+        decode_response(rsp, &cmd, &error_code, &msg);
+
+        if (error_code != 0) {
+            spdlog::warn("Error reported from worker {}", error_code);
+        }
+
+        this->job_done = true;
+
+        // calling the callback
+        this->on_complete(this->partition_idx, error_code, msg);
+
+        // sending the message back to the client
+        driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
     }
 
     bool progress() {
@@ -79,7 +105,7 @@ class IndexJob : public tasker::Job {
     }
 
     void Finalize() {
-        spdlog::info("Finalizing job {}", this->job_id);
+        spdlog::info("Finalizing index job {}", this->job_id);
         if (this->worker != nullptr) {
             driver.GetExecutor()->ReleaseWorker(*this, this->worker);
         }
@@ -98,7 +124,10 @@ class PartitionJob : public tasker::Job {
 
     PartitionCommand *partition_command;  //todo delete
 
+    std::string index_id = "";
     bool job_done = false;
+
+    int32_t error_code = 0;
 
    public:
     PartitionJob(std::string command, std::string job_id, std::string client_id,
@@ -118,7 +147,7 @@ class PartitionJob : public tasker::Job {
 
             // std::replace(input_file_name.begin(), input_file_name.end(), '.', '_');
             // create a random index id
-            std::string index_id = "index-" + gen_random(8);
+            this->index_id = "index-" + gen_random(8);
             std::string p_cmd = "prt -s " + temp_index_cmd.GetRelativeSrcFile() + " -p " + std::to_string(temp_index_cmd.GetPartitions()) + " -d " + index_id;
 
             spdlog::info("Generated partition command : {}", p_cmd);
@@ -136,18 +165,17 @@ class PartitionJob : public tasker::Job {
     void OnWorkerMessage(std::string &worker_id, std::string &rsp) {
         spdlog::info("Message from worker {}, {}", worker_id, rsp);
 
-        int32_t error_code;
         std::string cmd, msg;
-        decode_response(rsp, &cmd, &error_code, &msg);
+        decode_response(rsp, &cmd, &this->error_code, &msg);
 
         if (error_code != 0) {
             spdlog::warn("Error reported from worker {}", error_code);
+
+            // reporting the error to the client
+            driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
         }
 
         this->job_done = true;
-
-        // sending the message back to the client
-        driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
     }
 
     void OnWorkerRevoked(std::string &worker_id) {
@@ -180,6 +208,23 @@ class PartitionJob : public tasker::Job {
         }
 
         // now schedule index jobs
+        if (this->error_code == 0) {
+            for (int32_t idx = 0; idx < this->partition_command->GetPartitions(); idx++) {
+                std::string idx_src = this->index_id + "/mref-" + std::to_string(idx + 1) + ".fa";
+
+                std::string job_id = gen_random(16);
+                std::shared_ptr<IndexJob> prt_job = std::make_shared<IndexJob>(
+                    idx_src, job_id,
+                    idx,
+                    [](int32_t idx, int32_t error_code, std::string msg) {
+                        spdlog::info("Indexing done for {} {} {}", idx, error_code, msg);
+                    },
+                    client_id,
+                    driver);
+                spdlog::info("Created index job for partition {}", idx + 1);
+                driver.GetExecutor()->AddJob(prt_job);
+            }
+        }
     }
 
     ~PartitionJob() {
