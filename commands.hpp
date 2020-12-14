@@ -93,19 +93,40 @@ class PartitionCommand : public tasker::Command {
     }
 };
 
-void parse_parition_command(std::string &cmd, std::string &root_dir,
-                            std::string *src_file,
-                            std::string *dst_folder, int32_t *partitions) {
-    std::shared_ptr<std::vector<const char *>> args;
-    tokenize(cmd, args);
+class IndexCommand : public tasker::Command {
+   private:
+    std::string src_file;
+    void Validate(int32_t *code, std::string *msg) {
+        // check source file exists
+        if (!std::filesystem::exists(src_file)) {
+            *msg = create_response(404, "File " + src_file + " doesn't exists");
+            *code = 404;
+        } else {
+            *code = 0;
+        }
+    }
 
-    cxxopts::Options options("Parition", "Parition Command Handler");
-    options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("s,source", "Source file", cxxopts::value<std::string>())("d,destination", "Destination folder", cxxopts::value<std::string>());
+   public:
+    IndexCommand(std::string cmd) : tasker::Command(cmd) {}
 
-    auto results = options.parse(args->size(), args->data());
+    void Parse(int32_t *code, std::string *msg) {
+        std::shared_ptr<std::vector<const char *>> args;
+        tokenize(this->command, args);
 
-    *src_file = root_dir + results["s"].as<std::string>();
-    *dst_folder = root_dir + results["d"].as<std::string>();
-    *partitions = results["p"].as<std::int32_t>();
-}
+        cxxopts::Options options("Index", "Index Command Handler");
+        options.add_options()("s,source", "Source file", cxxopts::value<std::string>());
+
+        auto results = options.parse(args->size(), args->data());
+
+        std::string root_dir = get_root();
+
+        this->src_file = root_dir + results["s"].as<std::string>();
+        this->Validate(code, msg);
+    }
+
+    std::string &GetSrcFile() {
+        return this->src_file;
+    }
+};
+
 #endif /* C37E4C99_F798_4490_A00F_CD48E100A69D */

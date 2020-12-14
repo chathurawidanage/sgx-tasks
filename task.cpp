@@ -10,6 +10,11 @@
 #include "uuid.hpp"
 #include "worker.hpp"
 
+std::string prt_command = "prt";
+std::string idx_command = "idx";
+
+std::string msg_cmd = tasker::GetCommand(tasker::Commands::MESSAGE);
+
 int main(int argc, char *argv[]) {
     std::string root_dir = get_root();
 
@@ -18,8 +23,6 @@ int main(int argc, char *argv[]) {
     tasker::Worker worker(gen_random(16));
     worker.OnMessage([&worker, &root_dir](std::string msg) {
         spdlog::info("Message received from server : {}", msg);
-        std::string msg_cmd = tasker::GetCommand(tasker::Commands::MESSAGE);
-        std::string prt_command = "prt";
 
         // validation variables
         int32_t validation_code;
@@ -53,6 +56,23 @@ int main(int argc, char *argv[]) {
                 std::string resp = create_response(500, error_msg);
                 worker.Send(msg_cmd, resp);
             }
+        } else if (cmd.compare(idx_command) == 0) {
+            spdlog::info("Handling index command...");
+            auto index_command = IndexCommand(msg);
+            index_command.Parse(&validation_code, &validation_msg);
+
+            if (validation_code != 0) {
+                worker.Send(msg_cmd, validation_msg);
+                return;
+            }
+
+            std::string sys_command = "/bwa/bwa " + index_command.GetSrcFile();
+            spdlog::info("Executing command {}", sys_command);
+            int status = system(sys_command.c_str());
+
+            std::string resp = create_response(status);
+            worker.Send(msg_cmd, resp);
+            spdlog::info("Sent response to driver {}", resp);
         } else {
             std::string resp = create_response(404, "Unknown command " + msg_cmd);
             worker.Send(msg_cmd, resp);
