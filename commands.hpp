@@ -35,6 +35,7 @@ void tokenize(std::string &cmd, std::shared_ptr<std::vector<const char *>> &args
 
     args = std::make_shared<std::vector<const char *>>(tokens.size());
     std::transform(tokens.begin(), tokens.end(), args->begin(), [](std::string &tkn) {
+        spdlog::info("Tocken : {}", tkn);
         return tkn.c_str();
     });
 }
@@ -70,6 +71,8 @@ class PartitionCommand : public tasker::Command {
         options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("s,source", "Source file", cxxopts::value<std::string>())("d,destination", "Destination folder", cxxopts::value<std::string>());
 
         auto results = options.parse(args->size(), args->data());
+
+        spdlog::info("Args parsed : {} {} {}", results["s"].as<std::string>(), results["p"].as<std::int32_t>(), results["d"].as<std::string>());
 
         std::string root_dir = get_root();
 

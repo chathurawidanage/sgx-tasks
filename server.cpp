@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <chrono>
 #include <functional>
 #include <iostream>
@@ -114,8 +115,10 @@ class PartitionJob : public tasker::Job {
             this->job_done = true;
         } else {
             std::string input_file_name = std::filesystem::path(temp_index_cmd.GetSrcFile()).filename();
+
+            // std::replace(input_file_name.begin(), input_file_name.end(), '.', '_');
             // create a random index id
-            std::string index_id = "index_" + input_file_name + "_" + std::to_string(temp_index_cmd.GetPartitions());
+            std::string index_id = "index-" + gen_random(8);
             std::string p_cmd = "prt -s " + temp_index_cmd.GetRelativeSrcFile() + " -p " + std::to_string(temp_index_cmd.GetPartitions()) + " -d " + index_id;
 
             spdlog::info("Generated partition command : {}", p_cmd);
@@ -185,7 +188,7 @@ class PartitionJob : public tasker::Job {
 };
 
 int main(int argc, char *argv[]) {
-    spdlog::set_level(spdlog::level::debug);
+    spdlog::set_level(spdlog::level::info);
     // spdlog::set_pattern("[%H:%M:%S %z] [%l] [trd %t] %v");
 
     tasker::Driver driver;
