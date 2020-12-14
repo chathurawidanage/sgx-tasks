@@ -41,12 +41,26 @@ class IndexJob : public tasker::Job {
     std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
     bool job_done = false;
 
+    IndexCommand *index_command;  //todo delete
+
    public:
     IndexJob(std::string input_file,
              std::string job_id,
              std::string client_id,
              tasker::Driver &driver) : Job(job_id, client_id, driver) {
         this->input_file = input_file;
+
+        std::string validation_msg;
+        int32_t validation_code;
+
+        std::string cmd = "idx -s " + input_file;
+        this->index_command = new IndexCommand(cmd);
+        this->index_command->Parse(&validation_code, &validation_msg);
+
+        if (validation_code != 0) {
+            driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
+            this->job_done = true;
+        }
     }
 
     bool progress() {
@@ -54,12 +68,8 @@ class IndexJob : public tasker::Job {
             this->worker = driver.GetExecutor()->AllocateWorker(*this, "");
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
-
-                std::string command = "bwa mem ";
-                command.append(this->input_file);
-
-                spdlog::info("Sending command to worker {}", command);
-                this->worker->Send(command);
+                spdlog::info("Sending command to worker {}", this->index_command->GetCommand());
+                this->worker->Send(this->index_command->GetCommand());
             } else {
                 spdlog::info("Couldn't get a worker allocated for job {}", this->job_id);
             }
@@ -72,6 +82,10 @@ class IndexJob : public tasker::Job {
         if (this->worker != nullptr) {
             driver.GetExecutor()->ReleaseWorker(*this, this->worker);
         }
+    }
+
+    ~IndexJob() {
+        delete this->index_command;
     }
 };
 
@@ -90,12 +104,28 @@ class PartitionJob : public tasker::Job {
                  tasker::Driver &driver) : Job(job_id, client_id, driver) {
         std::string validation_msg;
         int32_t validation_code;
-        partition_command = new PartitionCommand(command);
-        partition_command->Parse(&validation_code, &validation_msg);
 
+        // client sends a index command, but we have to partition first
+        auto temp_index_cmd = ClientIndexCommand(command);
+        temp_index_cmd.Parse(&validation_code, &validation_msg);
         if (validation_code != 0) {
+            // send the error to the client
             driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
             this->job_done = true;
+        } else {
+            std::string input_file_name = std::filesystem::path(temp_index_cmd.GetSrcFile()).filename();
+            // create a random index id
+            std::string index_id = "index_" + input_file_name + "_" + std::to_string(temp_index_cmd.GetPartitions());
+
+            std::string p_cmd = command + " -d " + index_id;
+
+            partition_command = new PartitionCommand(p_cmd);
+            partition_command->Parse(&validation_code, &validation_msg);
+
+            if (validation_code != 0) {
+                driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
+                this->job_done = true;
+            }
         }
     }
 
@@ -144,6 +174,8 @@ class PartitionJob : public tasker::Job {
         if (this->worker != nullptr) {
             driver.GetExecutor()->ReleaseWorker(*this, this->worker);
         }
+
+        // now schedule index jobs
     }
 
     ~PartitionJob() {
@@ -176,7 +208,7 @@ int main(int argc, char *argv[]) {
         std::string task_cmd;
         stream >> task_cmd;
 
-        if (task_cmd.compare("prt") == 0) {
+        if (task_cmd.compare("index") == 0) {
             spdlog::info("Handling parition commnad...");
 
             std::string job_id = gen_random(16);
