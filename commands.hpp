@@ -35,8 +35,10 @@ void tokenize(std::string &cmd, std::shared_ptr<std::vector<const char *>> &args
 
     args = std::make_shared<std::vector<const char *>>(tokens.size());
     std::transform(tokens.begin(), tokens.end(), args->begin(), [](std::string &tkn) {
-        spdlog::info("Tocken : {}", tkn);
-        return tkn.c_str();
+        // TODO: creating a copy, change this
+        auto str = new std::string();
+        *str = tkn;
+        return str->c_str();
     });
 }
 
@@ -67,8 +69,12 @@ class PartitionCommand : public tasker::Command {
         std::shared_ptr<std::vector<const char *>> args;
         tokenize(this->command, args);
 
-        cxxopts::Options options("Parition", "Parition Command Handler");
+        cxxopts::Options options("prt", "Parition Command Handler");
         options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("s,source", "Source file", cxxopts::value<std::string>())("d,destination", "Destination folder", cxxopts::value<std::string>());
+
+        for (auto x : *args) {
+            spdlog::info("Arg {}", x);
+        }
 
         auto results = options.parse(args->size(), args->data());
 
@@ -116,9 +122,10 @@ class IndexCommand : public tasker::Command {
         std::shared_ptr<std::vector<const char *>> args;
         tokenize(this->command, args);
 
-        cxxopts::Options options("Index", "Index Command Handler");
+        cxxopts::Options options("idx", "Index Command Handler");
         options.add_options()("s,source", "Source file", cxxopts::value<std::string>());
 
+        spdlog::info("Parsing command {}", this->command);
         auto results = options.parse(args->size(), args->data());
 
         std::string root_dir = get_root();
@@ -155,7 +162,7 @@ class ClientIndexCommand : public tasker::Command {
         std::shared_ptr<std::vector<const char *>> args;
         tokenize(this->command, args);
 
-        cxxopts::Options options("Index", "Index Command Handler");
+        cxxopts::Options options("index", "Index Command Handler");
         options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("s,source", "Source file", cxxopts::value<std::string>());
 
         auto results = options.parse(args->size(), args->data());

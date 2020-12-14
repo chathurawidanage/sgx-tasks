@@ -38,7 +38,7 @@ class JobExecutor {
    public:
     JobExecutor(tasker::Driver &driver);
 
-    void AddJob(std::shared_ptr<Job> job);
+    void AddJob(std::shared_ptr<Job> job, bool no_lock = false);
 
     void AddWorker(std::string &worker_id, std::string &worker_type);
 

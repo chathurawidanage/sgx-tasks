@@ -90,7 +90,7 @@ class IndexJob : public tasker::Job {
         driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
     }
 
-    bool progress() {
+    bool Progress() {
         if (worker == nullptr) {
             this->worker = driver.GetExecutor()->AllocateWorker(*this, "");
             if (this->worker != nullptr) {
@@ -209,6 +209,7 @@ class PartitionJob : public tasker::Job {
 
         // now schedule index jobs
         if (this->error_code == 0) {
+            spdlog::info("Creating indexing jobs for {} partitions.", this->partition_command->GetPartitions());
             for (int32_t idx = 0; idx < this->partition_command->GetPartitions(); idx++) {
                 std::string idx_src = this->index_id + "/mref-" + std::to_string(idx + 1) + ".fa";
 
@@ -222,8 +223,10 @@ class PartitionJob : public tasker::Job {
                     client_id,
                     driver);
                 spdlog::info("Created index job for partition {}", idx + 1);
-                driver.GetExecutor()->AddJob(prt_job);
+                driver.GetExecutor()->AddJob(prt_job, true);
             }
+        } else {
+            spdlog::info("Partition job has failed. Not scheduling index jobs");
         }
     }
 

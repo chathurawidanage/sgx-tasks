@@ -64,10 +64,15 @@ void tasker::JobExecutor::AddWorker(std::string &worker_id, std::string &worker_
     this->ping_lock.unlock();
 }
 
-void tasker::JobExecutor::AddJob(std::shared_ptr<Job> job) {
-    this->jobs_lock.lock();
-    this->jobs.insert(std::make_pair<>(job->GetId(), job));
-    this->jobs_lock.unlock();
+void tasker::JobExecutor::AddJob(std::shared_ptr<Job> job, bool no_lock) {
+    // TODO No lock is a hack
+    if (no_lock) {
+        this->jobs.insert(std::make_pair<>(job->GetId(), job));
+    } else {
+        this->jobs_lock.lock();
+        this->jobs.insert(std::make_pair<>(job->GetId(), job));
+        this->jobs_lock.unlock();
+    }
 }
 
 void tasker::JobExecutor::OnPing(std::string &from_worker) {
