@@ -132,10 +132,11 @@ void tasker::JobExecutor::IdentifyFailures() {
     this->jobs_lock.unlock();
 }
 
-void tasker::JobExecutor::AddTempJob() {
+void tasker::JobExecutor::AddTempJobs() {
     this->jobs_lock.lock();
 
     auto temp_jobs_it = this->jobs_temp.begin();
+    spdlog::info("Adding {} jobs to the queue", this->jobs_temp.size());
     while (temp_jobs_it != this->jobs_temp.end()) {
         auto job = this->jobs_temp.extract(temp_jobs_it);
         this->jobs.insert(std::move(job));
@@ -149,7 +150,7 @@ void tasker::JobExecutor::Progress() {
     int32_t idle_count = 0;
     while (true) {
         this->IdentifyFailures();
-        this->AddTempJob();
+        this->AddTempJobs();
 
         if (this->jobs.empty()) {
             // todo replace with condition variables and locks
@@ -157,6 +158,7 @@ void tasker::JobExecutor::Progress() {
             continue;
         }
         this->jobs_lock.lock();
+        spdlog::info("Have {} jobs in queue", this->jobs.size());
         std::unordered_map<std::string, std::shared_ptr<Job>>::iterator i = this->jobs.begin();
         while (i != this->jobs.end()) {
             spdlog::debug("Processing job {}", i->second->GetId());
@@ -170,7 +172,7 @@ void tasker::JobExecutor::Progress() {
             }
         }
         this->jobs_lock.unlock();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::seconds(10));
     }
 }
 

@@ -37,7 +37,7 @@ class JobExecutor {
 
     void IdentifyFailures();
 
-    void AddTempJob();
+    void AddTempJobs();
 
    public:
     JobExecutor(tasker::Driver &driver);
