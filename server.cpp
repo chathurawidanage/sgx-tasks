@@ -86,9 +86,7 @@ class IndexJob : public tasker::Job {
         this->job_done = true;
 
         // calling the callback
-        spdlog::info("Calling on complete...");
         (*(this->on_complete))(this->partition_idx, error_code, msg);
-        spdlog::info("Called on complete...");
     }
 
     void OnWorkerRevoked(std::string &worker_id) {
@@ -239,6 +237,7 @@ class PartitionJob : public tasker::Job {
                     idx,
                     std::make_shared<std::function<void(int32_t, int32_t, std::string)>>([index_counter, driver_ptr, clinet_id_ptr, faile_job, total_jobs, index_id_ptr](int32_t idx, int32_t error_code, std::string msg) {
                         spdlog::info("Indexing done for {} {} {}", idx, error_code, msg);
+                        spdlog::info("Own count {}", index_counter.use_count());
                         (*index_counter)++;
                         if (error_code == 0) {
                             spdlog::info("Indexing completed for {}", *index_counter);
