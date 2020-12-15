@@ -31,7 +31,7 @@ class Client {
         zmq::message_t message(final_message.size());
         std::memcpy(message.data(), final_message.data(), final_message.size());
 
-        std::cout << "Sending message : " << message.to_string() << std::endl;
+        //std::cout << "Sending message : " << message.to_string() << std::endl;
         socket->send(message, zmq::send_flags::none);
     }
 
