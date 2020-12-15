@@ -217,7 +217,7 @@ class PartitionJob : public tasker::Job {
         }
 
         // now schedule index jobs
-        if (this->error_code == 0) {
+        if (this->error_code != 0) {
             auto index_counter = std::make_shared<int32_t>(0);
 
             auto total_jobs = std::make_shared<int32_t>(this->partition_command->GetPartitions());

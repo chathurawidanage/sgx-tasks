@@ -158,7 +158,6 @@ void tasker::JobExecutor::Progress() {
             continue;
         }
         this->jobs_lock.lock();
-        spdlog::info("Have {} jobs in queue", this->jobs.size());
         std::unordered_map<std::string, std::shared_ptr<Job>>::iterator i = this->jobs.begin();
         while (i != this->jobs.end()) {
             spdlog::debug("Processing job {}", i->second->GetId());
@@ -172,7 +171,7 @@ void tasker::JobExecutor::Progress() {
             }
         }
         this->jobs_lock.unlock();
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
 
