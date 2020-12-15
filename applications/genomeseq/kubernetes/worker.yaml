@@ -23,7 +23,7 @@ spec:
       containers:
         - name: tasker
           image: cwidanage/tasker:latest
-          command: ["/sgx-tasks/build//applications/genomeseq/task"]
+          command: ["/sgx-tasks/build//applications/genomeseq/nonsecworker"]
           args: ["tcp://tasker-server-worker:5050"]
           env:
             - name: ENV_ROOT_PATH

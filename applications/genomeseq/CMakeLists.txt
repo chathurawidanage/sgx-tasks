@@ -10,10 +10,10 @@ target_link_libraries(server PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THR
 
 # Worker executable
 add_executable(
-    task
-    task.cpp
+    insecworker
+    insecworker.cpp
 )
-target_link_libraries(task PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} worker-lib tasker-common)
+target_link_libraries(insecworker PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} worker-lib tasker-common)
 
 # Client executable
 add_executable(
