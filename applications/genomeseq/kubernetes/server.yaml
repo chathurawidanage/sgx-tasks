@@ -22,8 +22,8 @@ spec:
             path: /
       containers:
         - name: tasker
-          image: cwidanage/tasker:0.16
-          command: ["/sgx-tasks/build/server"]
+          image: cwidanage/tasker:latest
+          command: ["/sgx-tasks/build/applications/genomeseq/server"]
           ports:
             - containerPort: 5000
             - containerPort: 5050

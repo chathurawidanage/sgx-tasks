@@ -12,7 +12,7 @@ RUN git clone https://github.com/lh3/bwa.git
 RUN cd bwa &&  make
 # parition
 RUN apt-get -y install python3
-ADD bio-sgx bio-sgx
+ADD python-util python-util
 EXPOSE 5050 5000
 
 
