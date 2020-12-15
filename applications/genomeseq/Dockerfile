@@ -7,9 +7,7 @@ RUN cd sgx-tasks
 RUN /usr/bin/cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_C_COMPILER:FILEPATH=/bin/gcc -H/sgx-tasks -B/sgx-tasks/build -G "Unix Makefiles"
 RUN /usr/bin/cmake --build /sgx-tasks/build --config Release --target all -- -j 10
 # indexing
-RUN apt-get -y install zlib1g-dev
-RUN git clone https://github.com/lh3/bwa.git
-RUN cd bwa &&  make
+RUN apt-get -y install bwa
 # parition
 RUN apt-get -y install python3
 ADD python-util python-util

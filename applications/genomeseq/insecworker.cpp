@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
                 return;
             }
 
-            std::string sys_command = "/bwa/bwa index " + index_command.GetSrcFile();
+            std::string sys_command = "bwa index " + index_command.GetSrcFile();
             spdlog::info("Executing command {}", sys_command);
             int status = system(sys_command.c_str());
 
