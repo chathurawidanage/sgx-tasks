@@ -98,7 +98,7 @@ class IndexJob : public tasker::Job {
     }
 
     bool Progress() {
-        if (worker == nullptr) {
+        if (worker == nullptr && !this->job_done) {
             this->worker = driver->GetExecutor()->AllocateWorker(*this, "");
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);

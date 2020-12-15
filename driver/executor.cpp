@@ -138,11 +138,12 @@ void tasker::JobExecutor::AddTempJobs() {
     }
     this->jobs_lock.lock();
     auto temp_jobs_it = this->jobs_temp.begin();
-    spdlog::info("Adding {} jobs to the queue", this->jobs_temp.size());
+    spdlog::error("Adding {} jobs to the queue", this->jobs_temp.size());
 
     auto it = this->jobs_temp.begin();
     while (it != this->jobs_temp.end()) {
         this->jobs.insert(std::move(*it));
+        it++;
     }
 
     this->jobs_temp.clear();
