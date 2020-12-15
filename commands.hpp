@@ -72,10 +72,6 @@ class PartitionCommand : public tasker::Command {
         cxxopts::Options options("prt", "Parition Command Handler");
         options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("s,source", "Source file", cxxopts::value<std::string>())("d,destination", "Destination folder", cxxopts::value<std::string>());
 
-        for (auto x : *args) {
-            spdlog::info("Arg {}", x);
-        }
-
         auto results = options.parse(args->size(), args->data());
 
         spdlog::info("Args parsed : {} {} {}", results["s"].as<std::string>(), results["p"].as<std::int32_t>(), results["d"].as<std::string>());

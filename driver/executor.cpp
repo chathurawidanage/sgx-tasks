@@ -137,8 +137,9 @@ void tasker::JobExecutor::AddTempJob() {
 
     auto temp_jobs_it = this->jobs_temp.begin();
     while (temp_jobs_it != this->jobs_temp.end()) {
-        this->jobs.insert(*temp_jobs_it);
-        this->jobs_temp.erase(temp_jobs_it);
+        auto job = this->jobs_temp.extract(temp_jobs_it);
+        this->jobs.insert(std::move(job));
+        temp_jobs_it++;
     }
 
     this->jobs_lock.unlock();

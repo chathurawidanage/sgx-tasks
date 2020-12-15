@@ -12,10 +12,10 @@ class Job {
    protected:
     std::string job_id;
     std::string client_id;
-    tasker::Driver &driver;
+    std::shared_ptr<tasker::Driver> driver;
 
    public:
-    Job(std::string job_id, std::string client_id, tasker::Driver &driver);
+    Job(std::string job_id, std::string client_id, std::shared_ptr<tasker::Driver> driver);
 
     virtual void OnWorkerMessage(std::string &worker_id, std::string &msg);
 

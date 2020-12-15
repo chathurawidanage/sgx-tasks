@@ -42,7 +42,7 @@ class IndexJob : public tasker::Job {
     std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
     bool job_done = false;
     int32_t partition_idx;
-    std::function<void(int32_t, int32_t, std::string)> on_complete;
+    std::shared_ptr<std::function<void(int32_t, int32_t, std::string)>> on_complete;
 
     IndexCommand *index_command;  //todo delete
 
@@ -50,9 +50,9 @@ class IndexJob : public tasker::Job {
     IndexJob(std::string input_file,
              std::string job_id,
              int32_t partition_idx,
-             std::function<void(int32_t, int32_t, std::string)> on_complete,
+             std::shared_ptr<std::function<void(int32_t, int32_t, std::string)>> on_complete,
              std::string client_id,
-             tasker::Driver &driver) : Job(job_id, client_id, driver) {
+             std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver) {
         this->input_file = input_file;
         this->partition_idx = partition_idx;
         this->on_complete = on_complete;
@@ -65,7 +65,9 @@ class IndexJob : public tasker::Job {
         this->index_command->Parse(&validation_code, &validation_msg);
 
         if (validation_code != 0) {
-            driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
+            spdlog::info("Calling on complete...");
+            (*(this->on_complete))(this->partition_idx, validation_code, validation_msg);
+            spdlog::info("Called on complete...");
             this->job_done = true;
         }
     }
@@ -84,7 +86,9 @@ class IndexJob : public tasker::Job {
         this->job_done = true;
 
         // calling the callback
-        this->on_complete(this->partition_idx, error_code, msg);
+        spdlog::info("Calling on complete...");
+        (*(this->on_complete))(this->partition_idx, error_code, msg);
+        spdlog::info("Called on complete...");
     }
 
     void OnWorkerRevoked(std::string &worker_id) {
@@ -97,7 +101,7 @@ class IndexJob : public tasker::Job {
 
     bool Progress() {
         if (worker == nullptr) {
-            this->worker = driver.GetExecutor()->AllocateWorker(*this, "");
+            this->worker = driver->GetExecutor()->AllocateWorker(*this, "");
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
                 spdlog::info("Sending command to worker {}", this->index_command->GetCommand());
@@ -112,7 +116,7 @@ class IndexJob : public tasker::Job {
     void Finalize() {
         spdlog::info("Finalizing index job {}", this->job_id);
         if (this->worker != nullptr) {
-            driver.GetExecutor()->ReleaseWorker(*this, this->worker);
+            driver->GetExecutor()->ReleaseWorker(*this, this->worker);
         }
     }
 
@@ -136,7 +140,7 @@ class PartitionJob : public tasker::Job {
 
    public:
     PartitionJob(std::string command, std::string job_id, std::string client_id,
-                 tasker::Driver &driver) : Job(job_id, client_id, driver) {
+                 std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver) {
         std::string validation_msg;
         int32_t validation_code;
 
@@ -145,7 +149,7 @@ class PartitionJob : public tasker::Job {
         temp_index_cmd.Parse(&validation_code, &validation_msg);
         if (validation_code != 0) {
             // send the error to the client
-            driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
+            driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
             this->job_done = true;
         } else {
             std::string input_file_name = std::filesystem::path(temp_index_cmd.GetSrcFile()).filename();
@@ -161,7 +165,7 @@ class PartitionJob : public tasker::Job {
             this->partition_command->Parse(&validation_code, &validation_msg);
 
             if (validation_code != 0) {
-                driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
+                driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
                 this->job_done = true;
             }
         }
@@ -177,7 +181,7 @@ class PartitionJob : public tasker::Job {
             spdlog::warn("Error reported from worker {}", error_code);
 
             // reporting the error to the client
-            driver.SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
+            driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
         }
 
         this->job_done = true;
@@ -193,7 +197,7 @@ class PartitionJob : public tasker::Job {
 
     bool Progress() {
         if (worker == nullptr && !this->job_done) {
-            this->worker = driver.GetExecutor()->AllocateWorker(*this, "");
+            this->worker = driver->GetExecutor()->AllocateWorker(*this, "");
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
 
@@ -209,45 +213,48 @@ class PartitionJob : public tasker::Job {
     void Finalize() {
         spdlog::info("Finalizing job {}", this->job_id);
         if (this->worker != nullptr) {
-            this->driver.GetExecutor()->ReleaseWorker(*this, this->worker);
+            this->driver->GetExecutor()->ReleaseWorker(*this, this->worker);
         }
 
         // now schedule index jobs
-        if (this->error_code == 0) {
-            int32_t *index_counter = new int32_t;
-            *index_counter = 0;
+        if (this->error_code != 0) {
+            auto index_counter = std::make_shared<int32_t>(0);
 
-            int32_t *total_jobs = new int32_t;
-            *total_jobs = this->partition_command->GetPartitions();
+            auto total_jobs = std::make_shared<int32_t>(this->partition_command->GetPartitions());
 
-            bool *faile_job = new bool;
-            *faile_job = false;
+            auto faile_job = std::make_shared<bool>(false);
 
-            tasker::Driver *driver_ptr = &driver;
-            std::string *clinet_id_ptr = &client_id;
-            std::string *index_id_ptr = &index_id;
+            auto driver_ptr = this->driver;
+
+            auto clinet_id_ptr = std::make_shared<std::string>(client_id);
+            auto index_id_ptr = std::make_shared<std::string>(index_id);
 
             spdlog::info("Creating indexing jobs for {} partitions.", this->partition_command->GetPartitions());
             for (int32_t idx = 0; idx < this->partition_command->GetPartitions(); idx++) {
                 std::string idx_src = this->index_id + "/mref-" + std::to_string(idx + 1) + ".fa";
 
                 std::string job_id = gen_random(16);
-                std::shared_ptr<IndexJob> prt_job = std::make_shared<IndexJob>(
+                std::shared_ptr<IndexJob> idx_job = std::make_shared<IndexJob>(
                     idx_src, job_id,
                     idx,
-                    [&index_counter, &driver_ptr, &clinet_id_ptr, &faile_job, &total_jobs, &index_id_ptr](int32_t idx, int32_t error_code, std::string msg) {
+                    std::make_shared<std::function<void(int32_t, int32_t, std::string)>>([index_counter, driver_ptr, clinet_id_ptr, faile_job, total_jobs, index_id_ptr](int32_t idx, int32_t error_code, std::string msg) {
                         spdlog::info("Indexing done for {} {} {}", idx, error_code, msg);
-                        *index_counter++;
+                        (*index_counter)++;
                         if (error_code == 0) {
                             spdlog::info("Indexing completed for {}", *index_counter);
                         } else {
+                            spdlog::warn("Failed indexing partition {} {}", idx, *index_counter);
                             // one has failed indexing
+                            if (!(*faile_job)) {
+                                std::string error_msg = "Indexing failed for partition " + std::to_string(idx) + ". " + msg;
+                                driver_ptr->SendToClient(*clinet_id_ptr, tasker::GetCommand(tasker::Commands::MESSAGE), error_msg);
+                            }
+
                             // TODO remove other jobs to prevent wasting resources
                             *faile_job = true;
-                            std::string error_msg = "Indexing failed for partition " + std::to_string(idx) + ". " + msg;
-                            driver_ptr->SendToClient(*clinet_id_ptr, tasker::GetCommand(tasker::Commands::MESSAGE), error_msg);
                         }
 
+                        spdlog::info("IF COMP {} {}", *index_counter, *total_jobs);
                         if (*index_counter == *total_jobs) {
                             spdlog::info("All indexing jobs have been completed.");
                             if (!(*faile_job)) {
@@ -257,20 +264,13 @@ class PartitionJob : public tasker::Job {
                                 spdlog::warn("At least one of the indexing jobs has failed...");
                                 // TODO cleanup out directories
                             }
-
-                            // delete variables
-                            delete index_counter;
-                            delete total_jobs;
-                            delete faile_job;
-                            delete driver_ptr;
-                            delete clinet_id_ptr;
-                            delete index_id_ptr;
                         }
-                    },
+                    }),
                     client_id,
                     driver);
                 spdlog::info("Created index job for partition {}", idx + 1);
-                driver.GetExecutor()->AddJob(prt_job);
+                driver->GetExecutor()->AddJob(idx_job);
+                spdlog::info("Added job for partition {}", idx + 1);
             }
         } else {
             spdlog::info("Partition job has failed. Not scheduling index jobs");
@@ -279,6 +279,7 @@ class PartitionJob : public tasker::Job {
 
     ~PartitionJob() {
         delete this->partition_command;
+        spdlog::info("Deleting partition command...");
     }
 };
 
@@ -286,21 +287,21 @@ int main(int argc, char *argv[]) {
     spdlog::set_level(spdlog::level::info);
     // spdlog::set_pattern("[%H:%M:%S %z] [%l] [trd %t] %v");
 
-    tasker::Driver driver;
+    std::shared_ptr<tasker::Driver> driver = std::make_shared<tasker::Driver>();
 
-    driver.SetOnWorkerJoined([&driver](std::string &worker_id, std::string &worker_type) {
+    driver->SetOnWorkerJoined([&driver](std::string &worker_id, std::string &worker_type) {
         spdlog::info("Worker joined : {}", worker_id);
     });
 
-    driver.SetOnClientConnected([](std::string &client_id, std::string &client_meta) {
+    driver->SetOnClientConnected([](std::string &client_id, std::string &client_meta) {
         spdlog::info("Client connected : {}", client_id);
     });
 
-    driver.SetOnWorkerMsg([&driver](std::string &worker_id, std::string &msg) {
+    driver->SetOnWorkerMsg([&driver](std::string &worker_id, std::string &msg) {
         spdlog::info("Worker message from {} : {}", worker_id, msg);
     });
 
-    driver.SetOnClientMsg([&driver](std::string &client_id, std::string &msg) {
+    driver->SetOnClientMsg([driver](std::string &client_id, std::string &msg) {
         spdlog::info("Clinet message from [{}] : {}", client_id, msg);
         // extracting out task
         std::istringstream stream(msg);
@@ -314,13 +315,13 @@ int main(int argc, char *argv[]) {
             std::shared_ptr<PartitionJob> prt_job = std::make_shared<PartitionJob>(msg, job_id, client_id,
                                                                                    driver);
             spdlog::info("Created parition job object");
-            driver.GetExecutor()->AddJob(prt_job);
+            driver->GetExecutor()->AddJob(prt_job);
         } else {
             spdlog::info("Unknown Command : {}", task_cmd);
-            driver.SendToClient(client_id, "MSG Unknown command");
+            driver->SendToClient(client_id, "MSG Unknown command");
         }
     });
 
-    driver.Start();
+    driver->Start();
     return 0;
 }

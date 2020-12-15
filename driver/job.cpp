@@ -3,7 +3,7 @@
 #include "spdlog/spdlog.h"
 
 tasker::Job::Job(std::string job_id, std::string client_id,
-                 tasker::Driver &driver) : job_id(job_id), client_id(client_id), driver(driver) {
+                 std::shared_ptr<tasker::Driver> driver) : job_id(job_id), client_id(client_id), driver(driver) {
 }
 
 std::string &tasker::Job::GetId() {
