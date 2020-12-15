@@ -22,3 +22,5 @@ add_executable(
 )
 target_link_libraries(client PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} tasker-common)
 
+# Adding Dida sgx
+add_subdirectory(dida-sgx)

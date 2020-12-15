@@ -22,3 +22,21 @@ spec:
       env:
         - name: NFS_EXPORT_0
           value: "/shared *(rw,sync,no_subtree_check,fsid=0,no_root_squash)"
+--
+kind: Service
+apiVersion: v1
+metadata:
+  name: nfs-service
+spec:
+  type: ClusterIP
+  selector:
+    app: nfs-server-pod
+  ports:
+    - name: tcp-2049
+      protocol: TCP
+      port: 2049
+      targetPort: 2049
+    - name: udp-111
+      protocol: UDP
+      port: 111
+      targetPort: 111
