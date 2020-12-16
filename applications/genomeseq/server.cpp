@@ -19,6 +19,28 @@
 
 std::string root_dir = get_root();
 
+class Index {
+   private:
+    int32_t partitions;
+    std::string id;
+    std::string source_file;
+
+   public:
+    Index(int32_t partitions, std::string id, std::string source_file) : partitions(partitions), id(id), source_file(source_file) {
+    }
+
+    std::string Print() {
+        std::stringstream ss;
+
+        ss << id << "\t\t" << source_file << "\t\t" << partitions;
+
+        return ss.str();
+    }
+};
+
+std::mutex indices_lock;
+std::vector<std::shared_ptr<Index>> indices{};
+
 void decode_response(std::string &rsp, std::string *cmd, int32_t *error_code, std::string *msg) {
     *cmd = rsp.substr(0, 3);
     std::string err_code = rsp.substr(4, rsp.find(' ', 5) - 4);
@@ -226,6 +248,7 @@ class PartitionJob : public tasker::Job {
 
             auto clinet_id_ptr = std::make_shared<std::string>(client_id);
             auto index_id_ptr = std::make_shared<std::string>(index_id);
+            auto src_file_ptr = std::make_shared<std::string>(this->partition_command->GetSrcFile());
 
             spdlog::info("Creating indexing jobs for {} partitions.", this->partition_command->GetPartitions());
             for (int32_t idx = 0; idx < this->partition_command->GetPartitions(); idx++) {
@@ -235,7 +258,7 @@ class PartitionJob : public tasker::Job {
                 std::shared_ptr<IndexJob> idx_job = std::make_shared<IndexJob>(
                     idx_src, job_id,
                     idx,
-                    std::make_shared<std::function<void(int32_t, int32_t, std::string)>>([index_counter, driver_ptr, clinet_id_ptr, faile_job, total_jobs, index_id_ptr](int32_t idx, int32_t error_code, std::string msg) {
+                    std::make_shared<std::function<void(int32_t, int32_t, std::string)>>([index_counter, driver_ptr, clinet_id_ptr, faile_job, total_jobs, index_id_ptr, src_file_ptr](int32_t idx, int32_t error_code, std::string msg) {
                         spdlog::info("Indexing done for {} {} {}", idx, error_code, msg);
                         spdlog::info("Own count {}", index_counter.use_count());
                         (*index_counter)++;
@@ -259,6 +282,11 @@ class PartitionJob : public tasker::Job {
                             if (!(*faile_job)) {
                                 driver_ptr->SendToClient(*clinet_id_ptr, tasker::GetCommand(tasker::Commands::MESSAGE),
                                                          "Indexing completed and assigned ID " + (*index_id_ptr));
+
+                                // adding index to the DB
+                                indices_lock.lock();
+                                indices.push_back(std::make_shared<Index>(*total_jobs, *index_id_ptr, *src_file_ptr));
+                                indices_lock.unlock();
                             } else {
                                 spdlog::warn("At least one of the indexing jobs has failed...");
                                 // TODO cleanup out directories
@@ -315,8 +343,21 @@ int main(int argc, char *argv[]) {
                                                                                    driver);
             spdlog::info("Created parition job object");
             driver->GetExecutor()->AddJob(prt_job);
+        } else if (task_cmd.compare("ls") == 0) {
+            spdlog::info("Handling list commnad...");
+            indices_lock.lock();
+
+            std::stringstream ls_response;
+            ls_response << "ID\t\tSOURCE\t\tPARTITIONS";
+            for (auto &idx : indices) {
+                ls_response << idx->Print() << '\n';
+            }
+            ls_response << "\n("
+                        << indices.size() << ") indices";
+            indices_lock.unlock();
+            driver->SendToClient(client_id, "MSG", ls_response.str());
         } else {
-            spdlog::info("Unknown Command : {}", task_cmd);
+            spdlog::info("Unknown Command : [{}]", task_cmd);
             driver->SendToClient(client_id, "MSG Unknown command");
         }
     });
