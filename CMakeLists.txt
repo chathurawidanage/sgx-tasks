@@ -19,9 +19,10 @@ include_directories(SYSTEM ${ZeroMQ_INCLUDE_DIR})
 find_package(Threads)
 
 # Logging
-if(NOT TARGET spdlog)
-    find_package(spdlog REQUIRED)
-endif()
+include_directories(spdlog/include)
+# if(NOT TARGET spdlog)
+#     find_package(spdlog REQUIRED)
+# endif()
 
 # Common
 add_subdirectory(common)
