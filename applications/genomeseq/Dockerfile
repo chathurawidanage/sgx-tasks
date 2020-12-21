@@ -1,4 +1,4 @@
-FROM ubuntu:20.10
+FROM tozd/sgx:ubuntu-xenial
 
 RUN apt-get update
 RUN apt-get -y install libzmq3-dev libspdlog-dev cmake make git build-essential nano iputils-ping net-tools
