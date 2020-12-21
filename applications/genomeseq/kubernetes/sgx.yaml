@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: shell-demo2
+  namespace: default
+spec:
+  containers:
+  - image: tozd/sgx:ubuntu-xenial
+    imagePullPolicy: IfNotPresent
+    name: sgx-ubuntu2
+    command: ["/bin/bash", "-c", "--"]
+    args: ["while true; do sleep 30; done;"]
+    securityContext:
+        privileged: true
+    volumeMounts:
+    - mountPath: /var/run/aesmd/aesm.socket
+      name: aesmsocket
+  volumes:
+  - hostPath:
+      path: /var/run/aesmd/aesm.socket
+      type: Socket
+    name: aesmsocket
