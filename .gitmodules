@@ -1,0 +1,3 @@
+[submodule "applications/genomeseq/dida-sgx"]
+	path = applications/genomeseq/dida-sgx
+	url = https://github.com/chathurawidanage/dida-sgx.git
