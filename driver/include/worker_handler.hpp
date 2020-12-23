@@ -3,6 +3,8 @@
 #include <string>
 
 #include "driver.hpp"
+#include "spdlog/spdlog.h"
+
 namespace tasker {
 class WorkerHandler {
    private:
