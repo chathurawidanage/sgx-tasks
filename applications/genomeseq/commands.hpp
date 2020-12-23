@@ -2,7 +2,7 @@
 #define C37E4C99_F798_4490_A00F_CD48E100A69D
 #include <command.hpp>
 #include <cxxopts.hpp>
-#include <filesystem>
+#include <experimental/filesystem>
 #include <memory>
 #include <string>
 #include <vector>
@@ -50,14 +50,14 @@ class PartitionCommand : public tasker::Command {
 
     void Validate(int32_t *code, std::string *msg) {
         // check source file exists
-        if (!std::filesystem::exists(src_file)) {
+        if (!std::experimental::filesystem::exists(src_file)) {
             *msg = create_response(404, "File " + src_file + " doesn't exists");
             *code = 404;
         } else {
             *code = 0;
 
             spdlog::info("Creating output directories {}", this->dst_folder);
-            std::filesystem::create_directories(this->dst_folder);
+            std::experimental::filesystem::create_directories(this->dst_folder);
         }
     }
 
@@ -103,7 +103,7 @@ class IndexCommand : public tasker::Command {
     std::string src_file;
     void Validate(int32_t *code, std::string *msg) {
         // check source file exists
-        if (!std::filesystem::exists(src_file)) {
+        if (!std::experimental::filesystem::exists(src_file)) {
             *msg = create_response(404, "File " + src_file + " doesn't exists");
             *code = 404;
         } else {
@@ -143,7 +143,7 @@ class ClientIndexCommand : public tasker::Command {
 
     void Validate(int32_t *code, std::string *msg) {
         // check source file exists
-        if (!std::filesystem::exists(src_file)) {
+        if (!std::experimental::filesystem::exists(src_file)) {
             *msg = create_response(404, "File " + src_file + " doesn't exists");
             *code = 404;
         } else {

@@ -28,7 +28,7 @@ ExternalProject_Add(spdlog
 
 set(ZMQ_ROOT ${EXTERNAL_INSTALL_LOCATION}/zmq)
 set(ZMQ_INCLUDE_DIR ${ZMQ_ROOT}/include)
-set(ZMQ_LIBRARY ${ZMQ_ROOT}/lib/libzmq.a)
+set(ZMQ_LIBRARY_DIR ${ZMQ_ROOT}/lib)
 
 ExternalProject_Add(libzmq
     GIT_REPOSITORY https://github.com/zeromq/libzmq.git
@@ -39,6 +39,9 @@ ExternalProject_Add(cppzmq
     GIT_REPOSITORY https://github.com/zeromq/cppzmq.git
     CMAKE_ARGS -DCMAKE_INSTALL_PREFIX=${ZMQ_ROOT}
 )
+
+# find_package(ZeroMQ REQUIRED)
+
 
 # include_directories(${EXTERNAL_INSTALL_LOCATION}/include)
 # link_directories(${EXTERNAL_INSTALL_LOCATION}/lib)
@@ -80,10 +83,10 @@ include_directories(common/include)
 add_subdirectory(driver)
 include_directories(driver/include)
 
-# # Worker
-# add_subdirectory(worker)
-# include_directories(worker/include)
+# Worker
+add_subdirectory(worker)
+include_directories(worker/include)
 
-# # Applications
-# add_subdirectory(applications)
+# Applications
+add_subdirectory(applications)
 
