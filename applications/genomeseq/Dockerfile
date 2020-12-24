@@ -1,5 +1,6 @@
 FROM ubuntu:20.04
 
+ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get -y install libzmq3-dev libspdlog-dev cmake make git build-essential nano iputils-ping net-tools
 RUN git clone --recurse-submodules https://github.com/chathurawidanage/sgx-tasks.git
