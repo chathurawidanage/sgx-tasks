@@ -74,9 +74,6 @@ void tasker::Driver::StartHandler(int32_t port,
         if (tasker::GetCommand(tasker::Commands::JOIN).compare(cmd) == 0) {
             spdlog::debug("Registering remote process : [{}]", params);
 
-            std::string m = tasker::GetCommand(tasker::Commands::ACK);
-            this->Send(socket, params, m);
-
             std::string worker_type = "generic";
             if (worker_handler) {
                 this->executor->AddWorker(params, worker_type);
@@ -85,6 +82,9 @@ void tasker::Driver::StartHandler(int32_t port,
             if (on_connected != NULL) {
                 on_connected(params, worker_type);
             }
+
+            std::string m = tasker::GetCommand(tasker::Commands::ACK);
+            this->Send(socket, params, m);
         } else if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
             spdlog::debug("Message received :  {}", params);
             std::string id = params.substr(0, params.find(' '));
