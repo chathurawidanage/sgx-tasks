@@ -1,11 +1,10 @@
-FROM ubuntu:20.04
+FROM ya0guang/sgx-u20:1.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
 RUN apt-get -y install libzmq3-dev libspdlog-dev cmake make git build-essential nano iputils-ping net-tools
 RUN git clone --recurse-submodules https://github.com/chathurawidanage/sgx-tasks.git
-RUN git submodule update --init --recursive
-RUN cd sgx-tasks
+RUN cd sgx-tasks git submodule update --init --recursive
 RUN /usr/bin/cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_C_COMPILER:FILEPATH=/bin/gcc -H/sgx-tasks -B/sgx-tasks/build -G "Unix Makefiles"
 RUN /usr/bin/cmake --build /sgx-tasks/build --config Release --target all -- -j 10
 # indexing
