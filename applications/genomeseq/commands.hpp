@@ -184,4 +184,69 @@ class ClientIndexCommand : public tasker::Command {
     }
 };
 
+class DispatchCommand : public tasker::Command {
+   private:
+    /** Number of bits per item. */
+    unsigned ibits = 8;
+
+    /** The number of parallel threads. */
+    unsigned threads = 0;
+
+    /** The number of partitions. */
+    int pnum = 1;
+
+    /** The number of hash functions. */
+    int nhash = 5;
+
+    /** Minimum alignment length. */
+    int alen = 20;
+
+    /** The size of a b-mer. */
+    int bmer = -1;
+
+    /** The step size when breaking a read into b-mers. */
+    int bmer_step = -1;
+
+    /** single-end library. */
+    int se;
+
+    /** fastq mode dispatch. */
+    int fq;
+
+    /** Make bloom filters reusable*/
+    int reuse_bf;
+
+    void Validate(int32_t *code, std::string *msg) {
+        *code = 0;
+    }
+
+   public:
+    DispatchCommand(std::string cmd) : tasker::Command(cmd) {
+    }
+
+    void Parse(int32_t *code, std::string *msg) {
+        std::shared_ptr<std::vector<const char *>> args;
+        tokenize(this->command, args);
+
+        cxxopts::Options options("dsp", "Dispatch Command Handler");
+        options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("b,bmer", "Size of su", cxxopts::value<std::int32_t>());
+
+        auto results = options.parse(args->size(), args->data());
+
+        std::string root_dir = get_root();
+
+        this->bmer = results["b"].as<std::int32_t>();
+        this->pnum = results["p"].as<std::int32_t>();
+        this->Validate(code, msg);
+    }
+
+    int32_t &GetBmer() {
+        return this->bmer;
+    }
+
+    int32_t &GetPartitions() {
+        return this->pnum;
+    }
+};
+
 #endif /* C37E4C99_F798_4490_A00F_CD48E100A69D */

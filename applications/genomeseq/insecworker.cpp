@@ -9,6 +9,7 @@
 #include "spdlog/spdlog.h"
 #include "uuid.hpp"
 #include "worker.hpp"
+#include "worker_types.hpp"
 
 std::string prt_command = "prt";
 std::string idx_command = "idx";
@@ -20,7 +21,7 @@ int main(int argc, char *argv[]) {
 
     spdlog::info("Using {} as the root directory", root_dir);
 
-    tasker::Worker worker(gen_random(16));
+    tasker::Worker worker(gen_random(16), TYPE_INSECURE);
     worker.OnMessage([&worker, &root_dir](std::string msg) {
         spdlog::info("Message received from server : {}", msg);
 

@@ -19,7 +19,7 @@ class JobExecutor {
     std::unordered_map<std::string, std::shared_ptr<Job>> jobs_temp{};
 
     std::set<std::string> all_workers{};
-    std::queue<std::shared_ptr<tasker::WorkerHandler>> available_workers{};
+    std::unordered_map<std::string, std::queue<std::shared_ptr<tasker::WorkerHandler>>> available_workers{};
     std::unordered_map<std::string, std::shared_ptr<tasker::WorkerHandler>> busy_workers{};
     std::mutex workers_lock{};
 
@@ -44,7 +44,7 @@ class JobExecutor {
 
     void AddJob(std::shared_ptr<Job> job);
 
-    void AddWorker(std::string &worker_id, std::string &worker_type);
+    void AddWorker(std::string worker_id, std::string worker_type);
 
     void OnPing(std::string &from_worker);
 

@@ -11,8 +11,9 @@ bool tasker::JobExecutor::HasWorker(std::string &worker_id) {
 
 std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &to, std::string worker_type) {
     this->workers_lock.lock();
-    if (!available_workers.empty()) {
-        std::shared_ptr<tasker::WorkerHandler> allocated_worker = available_workers.front();
+    auto workers_of_type = this->available_workers.find(worker_type);
+    if (workers_of_type != this->available_workers.end() && !workers_of_type->second.empty()) {
+        std::shared_ptr<tasker::WorkerHandler> allocated_worker = workers_of_type->second.front();
 
         // check thether the worker is healthy
         this->ping_lock.lock();
@@ -24,7 +25,7 @@ std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &
                              allocated_worker->GetId());
                 spdlog::info("Timestamp : {}, Last Ping: {}", timestamp, ping_it->second);
                 // remove worker from avilable workers
-                available_workers.pop();
+                workers_of_type->second.pop();
                 this->all_workers.erase(allocated_worker->GetId());
 
                 // todo remove from ping map
@@ -39,7 +40,7 @@ std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &
         this->worker_assignment.insert(std::make_pair<>(allocated_worker->GetId(), to.GetId()));
 
         // remove from the available workers
-        available_workers.pop();
+        workers_of_type->second.pop();
 
         // add to the list of busy workers
         this->busy_workers.insert(std::make_pair<>(allocated_worker->GetId(), allocated_worker));
@@ -51,10 +52,15 @@ std::shared_ptr<tasker::WorkerHandler> tasker::JobExecutor::AllocateWorker(Job &
     }
 }
 
-void tasker::JobExecutor::AddWorker(std::string &worker_id, std::string &worker_type) {
+void tasker::JobExecutor::AddWorker(std::string worker_id, std::string worker_type) {
     this->workers_lock.lock();
     this->all_workers.insert(worker_id);
-    this->available_workers.push(std::make_shared<tasker::WorkerHandler>(worker_id, worker_type, driver));
+
+    if (this->available_workers.find(worker_type) == this->available_workers.end()) {
+        this->available_workers.insert(std::make_pair<>(worker_type, std::queue<std::shared_ptr<tasker::WorkerHandler>>()));
+    }
+
+    this->available_workers.find(worker_type)->second.push(std::make_shared<tasker::WorkerHandler>(worker_id, worker_type, driver));
     this->workers_lock.unlock();
 
     // consider this as the first ping
@@ -119,7 +125,7 @@ void tasker::JobExecutor::IdentifyFailures() {
                 if (busy_it == this->busy_workers.end()) {
                     spdlog::warn("Couldn't find the worker in the busy workers list. Something wrong!");
                 } else {
-                    this->available_workers.push(busy_it->second);
+                    this->available_workers.find(busy_it->second->GetType())->second.push(busy_it->second);
                     this->busy_workers.erase(worker_id);
                 }
             }
@@ -201,7 +207,7 @@ void tasker::JobExecutor::ReleaseWorker(Job &of, std::shared_ptr<WorkerHandler> 
             this->busy_workers.erase(worker->GetId());
 
             // make this worker avaialble again
-            this->available_workers.push(worker);
+            this->available_workers.find(worker->GetType())->second.push(worker);
         } else {
             spdlog::warn("Job {} requested to release the worker {}, which is not assigned to that job",
                          of.GetId(), worker->GetId());

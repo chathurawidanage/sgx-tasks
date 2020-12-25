@@ -20,6 +20,10 @@ class WorkerHandler {
         return this->worker_id;
     }
 
+    std::string &GetType() {
+        return this->worker_type;
+    }
+
     void Send(std::string &msg) {
         spdlog::info("Sending a message {} to {}", msg, this->worker_id);
         std::string msg_with_prefix;

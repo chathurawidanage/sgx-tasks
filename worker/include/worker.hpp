@@ -13,12 +13,13 @@ class Worker {
     std::string SPACE = " ";
     zmq::socket_t *socket;
     const std::string id;
+    const std::string type;
     std::function<void(std::string)> on_message;
 
     int64_t ping_interval = 10000;
 
    public:
-    Worker(const std::string &id);
+    Worker(const std::string &id,const std::string &type);
 
     void OnMessage(const std::function<void(std::string)> &on_message);
 

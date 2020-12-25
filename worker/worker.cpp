@@ -1,6 +1,6 @@
 #include "include/worker.hpp"
 
-tasker::Worker::Worker(const std::string &id) : id(id) {
+tasker::Worker::Worker(const std::string &id, const std::string &type) : id(id), type(type) {
 }
 
 void tasker::Worker::OnMessage(const std::function<void(std::string)> &on_message) {
@@ -35,7 +35,7 @@ int64_t tasker::Worker::GetPingInterval() {
 }
 
 int tasker::Worker::Start(std::string &driver_address) {
-    spdlog::info("Starting worker {}", this->id);
+    spdlog::info("Starting worker {} {}", this->id, this->type);
 
     //connect to the driver
     zmq::context_t ctx{1};  // 1 IO thread
@@ -54,7 +54,7 @@ int tasker::Worker::Start(std::string &driver_address) {
     }
 
     // sending join message
-    Send(tasker::GetCommand(tasker::JOIN));
+    Send(tasker::GetCommand(tasker::JOIN), this->type);
 
     // wait for acknowldgement
     zmq::message_t request;
