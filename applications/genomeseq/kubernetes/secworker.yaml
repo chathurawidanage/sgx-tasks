@@ -26,21 +26,23 @@ spec:
             path: /
       containers:
         - name: tasker
-          image: cwidanage/tasker:0.31
-          command: ["/bin/sh","-c"]
-          args: ["cd /sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA/ && c./didasgx tcp://tasker-server-worker:5050"]
+          image: cwidanage/tasker:0.36
+          command: ["/bin/sh", "-c"]
+          args:
+            [
+              "cd /sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA/ && ./didasgx tcp://tasker-server-worker:5050",
+            ]
           env:
             - name: ENV_ROOT_PATH
               value: "/data/"
           volumeMounts:
             - name: nfs-volume
               mountPath: /data
+            - mountPath: /var/run/aesmd/aesm.socket
+              name: aesmsocket
           imagePullPolicy: Always
           securityContext:
             privileged: true
-          volumeMounts:
-            - mountPath: /var/run/aesmd/aesm.socket
-              name: aesmsocket
           resources:
             limits:
               cpu: 1
