@@ -5,7 +5,7 @@ RUN apt-get update
 RUN apt-get -y install libfmt-dev libzmq3-dev libspdlog-dev cmake make git build-essential nano iputils-ping net-tools
 RUN git clone --recurse-submodules https://github.com/chathurawidanage/sgx-tasks.git
 RUN cd sgx-tasks git submodule update --init --recursive
-RUN cd sgx-tasks/applications/genomeseq/dida-sgx/ && git pull origin tasker-integration
+RUN cd sgx-tasks/applications/genomeseq/dida-sgx/ && git checkout origin/tasker-integration
 RUN /usr/bin/cmake --no-warn-unused-cli -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=TRUE -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_C_COMPILER:FILEPATH=/bin/gcc -H/sgx-tasks -B/sgx-tasks/build -G "Unix Makefiles"
 RUN /usr/bin/cmake --build /sgx-tasks/build --config Release --target all -- -j 10
 # indexing
