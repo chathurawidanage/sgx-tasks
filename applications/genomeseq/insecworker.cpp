@@ -42,7 +42,8 @@ int main(int argc, char *argv[]) {
                     return;
                 }
 
-                std::string sys_command = "python3 /python-util/split.py " + partition_command.GetSrcFile() + " " + std::to_string(partition_command.GetPartitions()) + " " + partition_command.GetDstFolder();
+                // std::string sys_command = "python3 /python-util/split.py " + partition_command.GetSrcFile() + " " + std::to_string(partition_command.GetPartitions()) + " " + partition_command.GetDstFolder();
+                std::string sys_command = "prt -p " + std::to_string(partition_command.GetPartitions()) + " " + partition_command.GetSrcFile() + " " + partition_command.GetDstFolder();
                 spdlog::info("Executing command {}", sys_command);
                 int status = system(sys_command.c_str());
 

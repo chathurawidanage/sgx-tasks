@@ -11,8 +11,9 @@ RUN /usr/bin/cmake --build /sgx-tasks/build --config Release --target all -- -j 
 # indexing
 RUN apt-get -y install bwa
 # parition
-RUN apt-get -y install python3
-ADD python-util python-util
+# RUN apt-get -y install python3
+# ADD python-util python-util
+ENV PATH="/sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA:${PATH}"
 EXPOSE 5050 5000
 
 RUN adduser -q --disabled-password --gecos "" sgxuser
