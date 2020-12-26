@@ -27,11 +27,8 @@ spec:
       containers:
         - name: tasker
           image: cwidanage/tasker:0.31
-          command:
-            [
-              "/sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA/didasgx",
-            ]
-          args: ["tcp://tasker-server-worker:5050"]
+          command: ["/bin/sh","-c"]
+          args: ["cd /sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA/ && c./didasgx tcp://tasker-server-worker:5050"]
           env:
             - name: ENV_ROOT_PATH
               value: "/data/"
