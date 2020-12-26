@@ -14,4 +14,7 @@ RUN apt-get -y install python3
 ADD python-util python-util
 EXPOSE 5050 5000
 
+RUN adduser -q --disabled-password --gecos "" --no-create-home sgxuser
+USER sgxuser
+
 
