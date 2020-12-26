@@ -327,7 +327,14 @@ class DispatchJob : public tasker::Job {
         std::string validation_msg;
         int32_t validation_code;
         std::string root_dir = get_root();
-        this->dispatch_command = new DispatchCommand(command, root_dir);
+
+        std::string result_id = gen_random(8);
+
+        command = command + " -d result-" + result_id;
+
+        spdlog::info("Modified dsp command with destination {}", command);
+
+        this->dispatch_command = new DispatchCommand(command);
         this->dispatch_command->Parse(&validation_code, &validation_msg);
         if (validation_code != 0) {
             // send the error to the client

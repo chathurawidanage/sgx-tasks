@@ -130,6 +130,18 @@ void ClientIndexCommand::Parse(int32_t *code, std::string *msg) {
 /* Dispatch Command */
 void DispatchCommand::Validate(int32_t *code, std::string *msg) {
     *code = 0;
+
+    spdlog::info("Creating destination folder {}", this->destination);
+    std::filesystem::create_directories(this->destination);
+
+    // TODO: copy max inf from one place to another
+
+    // index exists
+    // if (!std::filesystem::exists(this->GetIndexFolder())) {
+    //     *code = 404;
+    //     *msg = "The index " + this->index_id + " doesn't exists";
+    //     return;
+    // }
 }
 
 void DispatchCommand::Parse(int32_t *code, std::string *msg) {
@@ -137,7 +149,7 @@ void DispatchCommand::Parse(int32_t *code, std::string *msg) {
     tokenize(this->command, args);
 
     cxxopts::Options options("dsp", "Dispatch Command Handler");
-    options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("b,bmer", "Size of su", cxxopts::value<std::int32_t>());
+    options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("b,bmer", "Size of su", cxxopts::value<std::int32_t>())("i,index", "Index ID", cxxopts::value<std::string>())("s,source", "Source File", cxxopts::value<std::vector<std::string>>())("d,destination", "Destination Folder", cxxopts::value<std::string>());
 
     auto results = options.parse(args->size(), args->data());
 
@@ -145,5 +157,18 @@ void DispatchCommand::Parse(int32_t *code, std::string *msg) {
 
     this->bmer = results["b"].as<std::int32_t>();
     this->pnum = results["p"].as<std::int32_t>();
+    this->index_id = results["i"].as<std::string>();
+    this->destination = root_dir + results["d"].as<std::string>();
+
+    auto inputs = results["s"].as<std::vector<std::string>>();
+    this->input1 = root_dir + inputs[0];
+    if (inputs.size() > 1) {
+        this->se = 0;
+        this->input2 = root_dir + inputs[1];
+    }
     this->Validate(code, msg);
+}
+
+std::string DispatchCommand::GetIndexFolder() {
+    return get_root() + "/" + "index-" + this->index_id;
 }

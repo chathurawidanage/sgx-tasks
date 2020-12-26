@@ -111,19 +111,26 @@ class DispatchCommand : public tasker::Command {
     /** Make bloom filters reusable*/
     int reuse_bf;
 
-    /** Root folder**/
-    std::string root_folder;
-
-    /**Input files**/
+    /** Input files**/
     std::string input1, input2;
+
+    /** ID of the index to use**/
+    std::string index_id;
+
+    /** search destination**/
+    std::string destination;
 
     void Validate(int32_t *code, std::string *msg);
 
    public:
-    DispatchCommand(std::string cmd, std::string root_folder) : tasker::Command(cmd), root_folder(root_folder) {
+    DispatchCommand(std::string cmd) : tasker::Command(cmd) {
     }
 
     void Parse(int32_t *code, std::string *msg);
+
+    std::string GetDestination() {
+        return this->destination;
+    }
 
     std::string GetInput1() {
         return this->input1;
@@ -141,9 +148,7 @@ class DispatchCommand : public tasker::Command {
         return this->fq;
     }
 
-    std::string GetRootFolder() {
-        return this->root_folder;
-    }
+    std::string GetIndexFolder();
 
     int32_t &GetBmer() {
         return this->bmer;
