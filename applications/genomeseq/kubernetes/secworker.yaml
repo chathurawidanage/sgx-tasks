@@ -1,20 +1,24 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tasker-worker
+  name: tasker-secure-worker
   labels:
-    app: tasker-worker
+    app: tasker-secure-worker
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: tasker-worker
+      app: tasker-secure-worker
   template:
     metadata:
       labels:
-        app: tasker-worker
+        app: tasker-secure-worker
     spec:
       volumes:
+        - name: aesmsocket
+          hostPath:
+            path: /var/run/aesmd/aesm.socket
+            type: Socket
         - name: nfs-volume
           nfs:
             # URL for the NFS server
@@ -22,8 +26,11 @@ spec:
             path: /
       containers:
         - name: tasker
-          image: cwidanage/tasker:latest
-          command: ["/sgx-tasks/build/applications/genomeseq/insecworker"]
+          image: cwidanage/tasker:0.31
+          command:
+            [
+              "/sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA/didasgx",
+            ]
           args: ["tcp://tasker-server-worker:5050"]
           env:
             - name: ENV_ROOT_PATH
@@ -32,6 +39,11 @@ spec:
             - name: nfs-volume
               mountPath: /data
           imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/run/aesmd/aesm.socket
+              name: aesmsocket
           resources:
             limits:
               cpu: 1

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tasker-insecure-worker
+  labels:
+    app: tasker-insecure-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tasker-insecure-worker
+  template:
+    metadata:
+      labels:
+        app: tasker-insecure-worker
+    spec:
+      volumes:
+        - name: nfs-volume
+          nfs:
+            # URL for the NFS server
+            server: 10.99.73.22
+            path: /
+      containers:
+        - name: tasker
+          image: cwidanage/tasker:0.31
+          command: ["/sgx-tasks/build/applications/genomeseq/insecworker"]
+          args: ["tcp://tasker-server-worker:5050"]
+          env:
+            - name: ENV_ROOT_PATH
+              value: "/data/"
+          volumeMounts:
+            - name: nfs-volume
+              mountPath: /data
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: 1
+              memory: 4G
