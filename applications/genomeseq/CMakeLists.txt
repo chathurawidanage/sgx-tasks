@@ -1,19 +1,21 @@
 cmake_minimum_required(VERSION 3.5)
 project(sgx-genomic)
 
+add_library(commands SHARED commands.cpp)
+
 # Server executable
 add_executable(
     server
     server.cpp
 )
-target_link_libraries(server PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} driver-lib tasker-common)
+target_link_libraries(server PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} driver-lib tasker-common commands)
 
 # Worker executable
 add_executable(
     insecworker
     insecworker.cpp
 )
-target_link_libraries(insecworker PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} worker-lib tasker-common)
+target_link_libraries(insecworker PUBLIC ${ZeroMQ_LIBRARY} spdlog::spdlog ${CMAKE_THREAD_LIBS_INIT} worker-lib tasker-common commands)
 
 # Client executable
 add_executable(

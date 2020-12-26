@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <list>
@@ -325,7 +326,8 @@ class DispatchJob : public tasker::Job {
                 std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver) {
         std::string validation_msg;
         int32_t validation_code;
-        this->dispatch_command = new DispatchCommand(command);
+        std::string root_dir = get_root();
+        this->dispatch_command = new DispatchCommand(command, root_dir);
         this->dispatch_command->Parse(&validation_code, &validation_msg);
         if (validation_code != 0) {
             // send the error to the client
