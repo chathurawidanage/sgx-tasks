@@ -123,7 +123,7 @@ class IndexJob : public tasker::Job {
 
     bool Progress() {
         if (worker == nullptr && !this->job_done) {
-            this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_INSECURE);
+            this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_UNSECURE);
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
                 spdlog::info("Sending command to worker {}", this->index_command->GetCommand());
@@ -219,7 +219,7 @@ class PartitionJob : public tasker::Job {
 
     bool Progress() {
         if (worker == nullptr && !this->job_done) {
-            this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_INSECURE);
+            this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_UNSECURE);
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
 
@@ -431,7 +431,7 @@ int main(int argc, char *argv[]) {
             indices_lock.lock();
 
             std::stringstream ls_response;
-            ls_response << "ID\t\tSOURCE\t\tPARTITIONS";
+            ls_response << "ID\t\tSOURCE\t\tPARTITIONS\n";
             for (auto &idx : indices) {
                 ls_response << idx->Print() << '\n';
             }

@@ -21,7 +21,7 @@ int main(int argc, char *argv[]) {
 
     spdlog::info("Using {} as the root directory", root_dir);
 
-    tasker::Worker worker(gen_random(16), TYPE_INSECURE);
+    tasker::Worker worker(gen_random(16), TYPE_UNSECURE);
     worker.OnMessage([&worker, &root_dir](std::string msg) {
         spdlog::info("Message received from server : {}", msg);
 

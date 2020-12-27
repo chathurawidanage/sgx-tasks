@@ -170,5 +170,5 @@ void DispatchCommand::Parse(int32_t *code, std::string *msg) {
 }
 
 std::string DispatchCommand::GetIndexFolder() {
-    return get_root() + "/" + "index-" + this->index_id;
+    return get_root() + "/" + this->index_id;
 }

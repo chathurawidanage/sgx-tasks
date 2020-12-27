@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tasker-insecure-worker
+  name: tasker-unsecure-worker
   labels:
-    app: tasker-insecure-worker
+    app: tasker-unsecure-worker
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: tasker-insecure-worker
+      app: tasker-unsecure-worker
   template:
     metadata:
       labels:
-        app: tasker-insecure-worker
+        app: tasker-unsecure-worker
     spec:
       volumes:
         - name: nfs-volume
@@ -23,7 +23,7 @@ spec:
       containers:
         - name: tasker
           image: cwidanage/tasker:0.31
-          command: ["/sgx-tasks/build/applications/genomeseq/insecworker"]
+          command: ["/sgx-tasks/build/applications/genomeseq/unsecworker"]
           args: ["tcp://tasker-server-worker:5050"]
           env:
             - name: ENV_ROOT_PATH
