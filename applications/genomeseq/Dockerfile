@@ -16,7 +16,4 @@ RUN apt-get -y install bwa
 ENV PATH="/sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA:${PATH}"
 EXPOSE 5050 5000
 
-RUN adduser -q --disabled-password --gecos "" sgxuser
-USER sgxuser
-
 
