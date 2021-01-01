@@ -13,9 +13,17 @@ class Job {
     std::string job_id;
     std::string client_id;
     std::shared_ptr<tasker::Driver> driver;
+    std::vector<std::shared_ptr<std::function<void(std::string, int32_t, std::string)>>> on_complete_cbs{};
+    bool completed = false;
+
+    void NotifyCompletion(int32_t code, std::string msg);
 
    public:
     Job(std::string job_id, std::string client_id, std::shared_ptr<tasker::Driver> driver);
+
+    void OnComplete(std::shared_ptr<std::function<void(std::string, int32_t, std::string)>> cb);
+
+    bool IsCompleted();
 
     virtual void OnWorkerMessage(std::string &worker_id, std::string &msg);
 

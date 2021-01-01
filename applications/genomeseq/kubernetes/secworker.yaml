@@ -26,11 +26,11 @@ spec:
             path: /
       containers:
         - name: tasker
-          image: cwidanage/tasker:0.36
+          image: cwidanage/tasker:0.42
           command: ["/bin/sh", "-c"]
           args:
             [
-              "cd /sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA/ && ./didasgx tcp://tasker-server-worker:5050",
+              "cd /sgx-tasks//applications/genomeseq/dida-sgx/ && git pull && cd /sgx-tasks/build/ && make cd /sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA/ && ./didasgx tcp://tasker-server-worker:5050",
             ]
           env:
             - name: ENV_ROOT_PATH

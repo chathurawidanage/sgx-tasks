@@ -6,6 +6,21 @@ tasker::Job::Job(std::string job_id, std::string client_id,
                  std::shared_ptr<tasker::Driver> driver) : job_id(job_id), client_id(client_id), driver(driver) {
 }
 
+void tasker::Job::NotifyCompletion(int32_t code, std::string msg) {
+    for (auto cb : this->on_complete_cbs) {
+        (*(cb))(this->job_id, code, msg);
+    }
+    this->completed = true;
+}
+
+bool tasker::Job::IsCompleted() {
+    return this->completed;
+}
+
+void tasker::Job::OnComplete(std::shared_ptr<std::function<void(std::string, int32_t, std::string)>> cb) {
+    this->on_complete_cbs.push_back(cb);
+}
+
 std::string &tasker::Job::GetId() {
     return this->job_id;
 }

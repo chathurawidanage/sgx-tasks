@@ -12,6 +12,7 @@
 #include "commands.hpp"
 #include "driver.hpp"
 #include "executor.hpp"
+#include "index.hpp"
 #include "job.hpp"
 #include "messages.hpp"
 #include "spdlog/spdlog.h"
@@ -21,27 +22,55 @@
 
 std::string root_dir = get_root();
 
-class Index {
-   private:
-    int32_t partitions;
-    std::string id;
-    std::string source_file;
-
-   public:
-    Index(int32_t partitions, std::string id, std::string source_file) : partitions(partitions), id(id), source_file(source_file) {
-    }
-
-    std::string Print() {
-        std::stringstream ss;
-
-        ss << id << "\t\t" << source_file << "\t\t" << partitions;
-
-        return ss.str();
-    }
-};
-
 std::mutex indices_lock;
 std::vector<std::shared_ptr<Index>> indices{};
+
+class Jobs {
+   private:
+    std::vector<std::shared_ptr<tasker::Job>> jobs{};
+    std::shared_ptr<std::function<void(int32_t, int32_t, std::string)>> on_all_completed;
+    std::shared_ptr<std::function<void(std::string, int32_t, std::string)>> on_job_completed;
+    std::shared_ptr<tasker::Driver> driver;
+
+    int32_t completions = 0;
+    int32_t failed_count = 0;
+
+    // latest error codes
+    int32_t latest_code = 0;
+    std::string latest_msg = "";
+
+    void ReportJobCompletion(std::string job_id, int32_t code, std::string msg) {
+        (*this->on_job_completed)(job_id, code, msg);
+        if (code != 0) {
+            this->failed_count++;
+            this->latest_code = code;
+            this->latest_msg = msg;
+        }
+        completions++;
+        if (completions == this->jobs.size()) {
+            (*this->on_all_completed)(this->failed_count, this->latest_code, this->latest_msg);
+        }
+    }
+
+   public:
+    Jobs(std::shared_ptr<std::function<void(int32_t, int32_t, std::string)>> on_all_completed,
+         std::shared_ptr<std::function<void(std::string, int32_t, std::string)>> on_job_completed,
+         std::shared_ptr<tasker::Driver> driver) : driver(driver), on_all_completed(on_all_completed), on_job_completed(on_job_completed) {
+    }
+
+    void Execute() {
+        for (auto job : this->jobs) {
+            driver->GetExecutor()->AddJob(job);
+        }
+    }
+
+    void AddJob(std::shared_ptr<tasker::Job> job) {
+        this->jobs.push_back(job);
+        job->OnComplete(std::make_shared<std::function<void(std::string, int32_t, std::string)>>([&](std::string job_id, int32_t code, std::string msg) {
+            this->ReportJobCompletion(job_id, code, msg);
+        }));
+    }
+};
 
 void decode_response(std::string &rsp, std::string *cmd, int32_t *error_code, std::string *msg) {
     *cmd = rsp.substr(0, 3);
@@ -118,7 +147,7 @@ class IndexJob : public tasker::Job {
         if (!this->job_done) {
             this->worker = nullptr;
         }
-        spdlog::info("After revoke func", worker_id);
+        spdlog::debug("After revoke func", worker_id);
     }
 
     bool Progress() {
@@ -155,7 +184,7 @@ class PartitionJob : public tasker::Job {
 
     PartitionCommand *partition_command;  //todo delete
 
-    std::string index_id = "";
+    std::string index_id;
     bool job_done = false;
 
     int32_t error_code = 0;
@@ -417,6 +446,7 @@ int main(int argc, char *argv[]) {
             std::string job_id = gen_random(16);
             std::shared_ptr<PartitionJob> prt_job = std::make_shared<PartitionJob>(msg, job_id, client_id,
                                                                                    driver);
+                                                                                
             spdlog::info("Created parition job object");
             driver->GetExecutor()->AddJob(prt_job);
         } else if (task_cmd.compare("dsp") == 0) {
