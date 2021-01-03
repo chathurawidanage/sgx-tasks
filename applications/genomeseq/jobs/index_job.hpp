@@ -16,7 +16,7 @@ class IndexJob : public tasker::Job {
     std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
     int32_t partition_idx;
 
-    IndexCommand *index_command;  //todo delete
+    IndexCommand *index_command;
 
    public:
     IndexJob(std::string input_file,
