@@ -26,7 +26,6 @@ std::string root_dir = get_root();
 std::mutex indices_lock;
 std::vector<std::shared_ptr<Index>> indices{};
 
-
 int main(int argc, char *argv[]) {
     spdlog::set_level(spdlog::level::info);
     // spdlog::set_pattern("[%H:%M:%S %z] [%l] [trd %t] %v");
@@ -53,7 +52,11 @@ int main(int argc, char *argv[]) {
         stream >> task_cmd;
 
         if (task_cmd.compare("index") == 0) {
-            HandleIndex(msg, client_id, driver);
+            HandleIndex(msg, client_id, driver, [&](int32_t partitions, std::string index_id, std::string src_file) {
+                indices_lock.lock();
+                indices.push_back(std::make_shared<Index>(partitions, index_id, src_file));
+                indices_lock.unlock();
+            });
         } else if (task_cmd.compare("dsp") == 0) {
             HandleDispatch(msg, client_id, driver);
         } else if (task_cmd.compare("ls") == 0) {

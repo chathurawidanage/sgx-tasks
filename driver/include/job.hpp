@@ -16,7 +16,7 @@ class Job {
     std::vector<std::shared_ptr<std::function<void(std::string, int32_t, std::string)>>> on_complete_cbs{};
     bool completed = false;
 
-    void NotifyCompletion(int32_t code, std::string msg);
+    void NotifyCompletion(int32_t code = 0, std::string msg = "");
 
    public:
     Job(std::string job_id, std::string client_id, std::shared_ptr<tasker::Driver> driver);
@@ -43,7 +43,7 @@ class Jobs {
    private:
     std::vector<std::shared_ptr<tasker::Job>> jobs{};
     std::shared_ptr<std::function<void(int32_t, int32_t, std::string)>> on_all_completed;
-    std::shared_ptr<std::function<void(std::string, int32_t, std::string)>> on_job_completed;
+    std::shared_ptr<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>> on_job_completed;
     std::shared_ptr<tasker::Driver> driver;
 
     int32_t completions = 0;
@@ -57,7 +57,7 @@ class Jobs {
 
    public:
     Jobs(std::shared_ptr<std::function<void(int32_t, int32_t, std::string)>> on_all_completed,
-         std::shared_ptr<std::function<void(std::string, int32_t, std::string)>> on_job_completed,
+         std::shared_ptr<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>> on_job_completed,
          std::shared_ptr<tasker::Driver> driver) : driver(driver), on_all_completed(on_all_completed), on_job_completed(on_job_completed) {
     }
 

@@ -1,7 +1,7 @@
 #include "job.hpp"
 
-#include "spdlog/spdlog.h"
 #include "executor.hpp"
+#include "spdlog/spdlog.h"
 
 tasker::Job::Job(std::string job_id, std::string client_id,
                  std::shared_ptr<tasker::Driver> driver) : job_id(job_id), client_id(client_id), driver(driver) {
@@ -44,13 +44,13 @@ void tasker::Job::OnWorkerRevoked(std::string &worker_id) {
 }
 
 void tasker::Jobs::ReportJobCompletion(std::string job_id, int32_t code, std::string msg) {
-    (*this->on_job_completed)(job_id, code, msg);
     if (code != 0) {
         this->failed_count++;
         this->latest_code = code;
         this->latest_msg = msg;
     }
-    completions++;
+    this->completions++;
+    (*this->on_job_completed)(job_id, code, msg, this->failed_count, this->completions);
     if (completions == this->jobs.size()) {
         (*this->on_all_completed)(this->failed_count, this->latest_code, this->latest_msg);
     }
