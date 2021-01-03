@@ -64,6 +64,10 @@ class Jobs {
     void Execute();
 
     void AddJob(std::shared_ptr<tasker::Job> job);
+
+    ~Jobs() {
+        spdlog::info("Deleting jobs instance...");
+    }
 };
 
 }  // namespace tasker
