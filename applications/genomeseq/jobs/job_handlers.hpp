@@ -87,6 +87,20 @@ void HandleDispatch(std::string msg, std::string client_id,
     std::string job_id = gen_random(16);
     std::shared_ptr<DispatchJob> dsp_job = std::make_shared<DispatchJob>(msg, job_id, client_id,
                                                                          driver);
+
+    dsp_job->OnComplete(std::make_shared<std::function<void(std::string, int32_t, std::string)>>([=](std::string job_id,
+                                                                                                     int32_t code, std::string msg) {
+        if (code != 0) {
+            spdlog::info("Dispatch job {} has failed. Not scheduling search");
+            // reporting the error to the client
+            driver->SendToClient(client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
+        } else {
+            //shedule indexing
+            // ScheduleIndexJobs(index_id, prt_job->GetCommand()->GetPartitions(),
+            //                   client_id, driver, prt_job->GetCommand()->GetSrcFile(), create_index);
+        }
+    }));
+                                                                        
     spdlog::info("Created dispatch job object");
     driver->GetExecutor()->AddJob(dsp_job);
 }

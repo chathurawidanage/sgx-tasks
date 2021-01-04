@@ -183,4 +183,29 @@ class DispatchCommand : public tasker::Command {
     }
 };
 
+
+class SearchCommand : public tasker::Command {
+   private:
+    std::string src_file;
+    std::string index_file;
+    std::string dst_file;
+    void Validate(int32_t *code, std::string *msg);
+
+   public:
+    SearchCommand(std::string cmd) : tasker::Command(cmd) {}
+
+    void Parse(int32_t *code, std::string *msg);
+
+    std::string &GetSrcFile() {
+        return this->src_file;
+    }
+
+    std::string &GetIndexFile(){
+        return this->index_file;
+    }
+
+    std::string &DstFile(){
+        return this->dst_file;
+    }
+};
 #endif /* C37E4C99_F798_4490_A00F_CD48E100A69D */

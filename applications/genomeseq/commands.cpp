@@ -136,17 +136,31 @@ void DispatchCommand::Validate(int32_t *code, std::string *msg) {
 
     // TODO: copy max inf from one place to another
 
-    // index exists
-    // if (!std::filesystem::exists(this->GetIndexFolder())) {
-    //     *code = 404;
-    //     *msg = "The index " + this->index_id + " doesn't exists";
-    //     return;
-    // }
+    //index exists
+    if (!std::filesystem::exists(this->GetIndexFolder())) {
+        *code = 404;
+        *msg = "The index " + this->index_id + " doesn't exists";
+        return;
+    }
+
+    // check maxinf
+    if (!std::filesystem::exists(this->GetIndexFolder() + "/maxinf")) {
+        *code = 404;
+        *msg = "The maxinf file doesn't exists in /" + this->index_id;
+        return;
+    } else {
+        spdlog::info("Copying maxinf from {} to {}", this->GetIndexFolder() + "/maxinf", this->destination + "/maxinf");
+        std::filesystem::copy(this->GetIndexFolder() + "/maxinf", this->destination + "/maxinf");
+    }
 }
 
 void DispatchCommand::Parse(int32_t *code, std::string *msg) {
     std::shared_ptr<std::vector<const char *>> args;
     tokenize(this->command, args);
+
+    for (size_t i = 0; i < args->size(); i++) {
+        spdlog::info("Arg {}", args->at(i));
+    }
 
     cxxopts::Options options("dsp", "Dispatch Command Handler");
     options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("b,bmer", "Size of su", cxxopts::value<std::int32_t>())("i,index", "Index ID", cxxopts::value<std::string>())("s,source", "Source File", cxxopts::value<std::vector<std::string>>())("d,destination", "Destination Folder", cxxopts::value<std::string>());
@@ -171,4 +185,32 @@ void DispatchCommand::Parse(int32_t *code, std::string *msg) {
 
 std::string DispatchCommand::GetIndexFolder() {
     return get_root() + "/" + this->index_id;
+}
+
+void SearchCommand::Parse(int32_t *code, std::string *msg) {
+    std::shared_ptr<std::vector<const char *>> args;
+    tokenize(this->command, args);
+
+    cxxopts::Options options("dsp", "Dispatch Command Handler");
+    options.add_options()("s,source", "Source File", cxxopts::value<std::string>())("i,index", "Index File", cxxopts::value<std::string>())("d,destination", "Destination sam file", cxxopts::value<std::string>());
+
+    auto results = options.parse(args->size(), args->data());
+
+    this->src_file = results["s"].as<std::string>();
+    this->index_file = results["i"].as<std::string>();
+    this->dst_file = results["d"].as<std::string>();
+
+    this->Validate(code, msg);
+}
+
+void SearchCommand::Validate(int32_t *code, std::string *msg) {
+    if (!std::filesystem::exists(this->src_file)) {
+        *msg = create_response(404, "File " + src_file + " doesn't exists");
+        *code = 404;
+    } else if (!std::filesystem::exists(this->index_file)) {
+        *msg = create_response(404, "File " + this->index_file + " doesn't exists");
+        *code = 404;
+    } else {
+        *code = 0;
+    }
 }

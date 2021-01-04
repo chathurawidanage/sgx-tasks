@@ -45,6 +45,10 @@ class DispatchJob : public tasker::Job {
         }
     }
 
+    DispatchCommand * GetCommand(){
+        return this->dispatch_command;
+    }
+
     bool Progress() {
         if (worker == nullptr && !this->job_done) {
             this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_SECURE);

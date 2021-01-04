@@ -12,9 +12,8 @@
 #include "worker_types.hpp"
 
 class IndexJob : public tasker::Job {
-    std::string input_file;
+
     std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
-    int32_t partition_idx;
 
     IndexCommand *index_command;
 
@@ -24,9 +23,6 @@ class IndexJob : public tasker::Job {
              int32_t partition_idx,
              std::string client_id,
              std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver) {
-        this->input_file = input_file;
-        this->partition_idx = partition_idx;
-
         std::string validation_msg;
         int32_t validation_code;
 
