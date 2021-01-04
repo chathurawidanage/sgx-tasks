@@ -16,10 +16,12 @@ void ScheduleIndexJobs(std::string index_id, int32_t partitions, std::string cli
                 if (failed_count != 0) {
                     spdlog::warn("{} of the indexing jobs has failed...", failed_count);
                 } else {
+                    spdlog::info("Sending indexing response to the client...");
                     driver->SendToClient(client_id, tasker::GetCommand(tasker::Commands::MESSAGE),
                                          "Indexing completed and assigned ID " + index_id);
 
                     // adding index to the DB
+                    spdlog::info("Calling db callback...");
                     (*create_index)(partitions, index_id, src_file);
                 }
             }),
@@ -31,7 +33,7 @@ void ScheduleIndexJobs(std::string index_id, int32_t partitions, std::string cli
                     std::string error_msg = "Indexing failed for job " + job_id + ". " + msg;
                     driver->SendToClient(client_id, tasker::GetCommand(tasker::Commands::MESSAGE), error_msg);
                 }
-                spdlog::info("Index {} completed {}/{}, Failures : {}", completed_jobs, partitions, failed_jobs);
+                spdlog::info("Index {} completed {}/{}, Failures : {}", index_id, completed_jobs, partitions, failed_jobs);
             }),
         driver);
 
