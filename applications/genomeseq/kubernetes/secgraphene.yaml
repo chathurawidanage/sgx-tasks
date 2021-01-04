@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: tasker-secure-worker
+  name: tasker-graphene-secure-worker
   labels:
-    app: tasker-secure-worker
+    app: tasker-graphene-secure-worker
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: tasker-secure-worker
+      app: tasker-graphene-secure-worker
   template:
     metadata:
       labels:
-        app: tasker-secure-worker
+        app: tasker-graphene-secure-worker
     spec:
       volumes:
         - name: aesmsocket
@@ -30,7 +30,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
             [
-              "cd /sgx-tasks//applications/genomeseq/dida-sgx/ && git pull && cd /sgx-tasks/build/ && make cd /sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA/ && ./didasgx tcp://tasker-server-worker:5050",
+              "cd /root/graphene/ && make && cd /root/graphene-bwa && SGX=1 ./pal_loader bwa",
             ]
           env:
             - name: ENV_ROOT_PATH
