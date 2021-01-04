@@ -15,7 +15,7 @@ class Index {
     std::string Print() {
         std::stringstream ss;
 
-        ss << id << "\t\t" << source_file << "\t\t" << partitions;
+        ss << id << "\t" << source_file << "\t" << partitions;
 
         return ss.str();
     }
