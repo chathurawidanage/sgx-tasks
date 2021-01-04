@@ -29,7 +29,7 @@ class DispatchJob : public tasker::Job {
 
         std::string result_id = gen_random(8);
 
-        command = command + " -d result-" + result_id;
+        command = command + " -d result_" + result_id;
 
         spdlog::info("Modified dsp command with destination {}", command);
 

@@ -158,10 +158,6 @@ void DispatchCommand::Parse(int32_t *code, std::string *msg) {
     std::shared_ptr<std::vector<const char *>> args;
     tokenize(this->command, args);
 
-    for (size_t i = 0; i < args->size(); i++) {
-        spdlog::info("Arg {}", args->at(i));
-    }
-
     cxxopts::Options options("dsp", "Dispatch Command Handler");
     options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("b,bmer", "Size of su", cxxopts::value<std::int32_t>())("i,index", "Index ID", cxxopts::value<std::string>())("s,source", "Source File", cxxopts::value<std::vector<std::string>>())("d,destination", "Destination Folder", cxxopts::value<std::string>());
 

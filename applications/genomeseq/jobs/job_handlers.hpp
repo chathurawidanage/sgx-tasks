@@ -56,7 +56,7 @@ void ScheduleIndexJobs(std::string index_id, int32_t partitions, std::string cli
 void HandleIndex(std::string msg, std::string client_id,
                  std::shared_ptr<tasker::Driver> driver,
                  std::shared_ptr<std::function<void(int32_t, std::string, std::string)>> create_index) {
-    std::string index_id = "index-" + gen_random(8);
+    std::string index_id = "index_" + gen_random(8);
     std::string job_id = gen_random(16);
 
     spdlog::info("Creating new index {}", index_id);
