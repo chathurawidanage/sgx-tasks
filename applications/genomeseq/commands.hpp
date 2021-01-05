@@ -120,7 +120,7 @@ class DispatchCommand : public tasker::Command {
     /** search destination**/
     std::string destination;
 
-    int segment;
+    int segment = 0;
 
     void Validate(int32_t *code, std::string *msg);
 
