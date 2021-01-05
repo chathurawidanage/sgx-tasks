@@ -148,7 +148,8 @@ void DispatchCommand::Validate(int32_t *code, std::string *msg) {
         *code = 404;
         *msg = "The maxinf file doesn't exists in /" + this->index_id;
         return;
-    } else {
+    } else if (!std::filesystem::exists(this->destination + +"/maxinf")) {
+        // copy only if doesn't exist
         spdlog::info("Copying maxinf from {} to {}", this->GetIndexFolder() + "/maxinf", this->destination + "/maxinf");
         std::filesystem::copy(this->GetIndexFolder() + "/maxinf", this->destination + "/maxinf");
     }
