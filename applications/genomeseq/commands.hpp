@@ -120,6 +120,8 @@ class DispatchCommand : public tasker::Command {
     /** search destination**/
     std::string destination;
 
+    int segment;
+
     void Validate(int32_t *code, std::string *msg);
 
    public:
@@ -127,6 +129,10 @@ class DispatchCommand : public tasker::Command {
     }
 
     void Parse(int32_t *code, std::string *msg);
+
+    int GetSegment() {
+        return this->segment;
+    }
 
     std::string GetDestination() {
         return this->destination;
@@ -183,7 +189,6 @@ class DispatchCommand : public tasker::Command {
     }
 };
 
-
 class SearchCommand : public tasker::Command {
    private:
     std::string src_file;
@@ -200,11 +205,11 @@ class SearchCommand : public tasker::Command {
         return this->src_file;
     }
 
-    std::string &GetIndexFile(){
+    std::string &GetIndexFile() {
         return this->index_file;
     }
 
-    std::string &DstFile(){
+    std::string &DstFile() {
         return this->dst_file;
     }
 };

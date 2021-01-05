@@ -13,6 +13,7 @@
 
 std::string prt_command = "prt";
 std::string idx_command = "idx";
+std::string mem_command = "mem";
 
 std::string msg_cmd = tasker::GetCommand(tasker::Commands::MESSAGE);
 
