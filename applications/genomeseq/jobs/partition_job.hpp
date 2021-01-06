@@ -94,6 +94,7 @@ class PartitionJob : public tasker::Job {
         spdlog::info("Finalizing job {}", this->job_id);
         if (this->worker != nullptr) {
             this->driver->GetExecutor()->ReleaseWorker(*this, this->worker);
+            this->worker = nullptr;
         }
     }
 

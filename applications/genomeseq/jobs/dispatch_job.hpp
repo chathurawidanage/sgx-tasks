@@ -13,9 +13,6 @@
 
 class DispatchJob : public tasker::Job {
    private:
-    bool job_done = false;
-    int32_t error_code = 0;
-
     std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
 
     DispatchCommand *dispatch_command;
@@ -38,19 +35,19 @@ class DispatchJob : public tasker::Job {
         if (validation_code != 0) {
             // send the error to the client
             driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), validation_msg);
-            this->job_done = true;
+            this->NotifyCompletion(validation_code, validation_msg);
         } else {
             spdlog::info("Dispatch command with params bmer : {}, pnum : {}", this->dispatch_command->GetBmer(),
                          this->dispatch_command->GetPartitions());
         }
     }
 
-    DispatchCommand * GetCommand(){
+    DispatchCommand *GetCommand() {
         return this->dispatch_command;
     }
 
     bool Progress() {
-        if (worker == nullptr && !this->job_done) {
+        if (worker == nullptr && !this->IsCompleted()) {
             this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_SECURE);
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
@@ -61,14 +58,15 @@ class DispatchJob : public tasker::Job {
                 spdlog::debug("Couldn't get a worker allocated for job {}", this->job_id);
             }
         }
-        return this->job_done;
+        return this->IsCompleted();
     }
 
     void OnWorkerMessage(std::string &worker_id, std::string &rsp) {
         spdlog::info("Message from worker {}, {}", worker_id, rsp);
 
+        int32_t error_code;
         std::string cmd, msg;
-        decode_response(rsp, &cmd, &this->error_code, &msg);
+        decode_response(rsp, &cmd, &error_code, &msg);
 
         if (error_code != 0) {
             spdlog::warn("Error reported from worker {}", error_code);
@@ -76,16 +74,25 @@ class DispatchJob : public tasker::Job {
             // reporting the error to the client
             driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
         }
-
-        this->job_done = true;
+        // TODO: remove
+        driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), "Dispatch done");
+        this->NotifyCompletion(error_code, msg);
     }
 
     void OnWorkerRevoked(std::string &worker_id) {
         spdlog::info("Job notified about worker {} disconnection.", worker_id);
-        if (!this->job_done) {
+        if (!this->IsCompleted()) {
             this->worker = nullptr;
         }
         spdlog::info("After revoke func", worker_id);
+    }
+
+    void Finalize() {
+        spdlog::info("Finalizing job {}", this->job_id);
+        if (this->worker != nullptr) {
+            this->driver->GetExecutor()->ReleaseWorker(*this, this->worker);
+            this->worker = nullptr;
+        }
     }
 };
 #endif /* B87388C5_91F5_454A_B5CC_2963C628E8C9 */
