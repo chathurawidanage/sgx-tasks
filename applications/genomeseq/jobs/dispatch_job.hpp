@@ -68,8 +68,6 @@ class DispatchJob : public tasker::Job {
             // reporting the error to the client
             driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
         }
-        // TODO: remove
-        driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::MESSAGE), "Dispatch done");
         this->NotifyCompletion(error_code, msg);
     }
 
