@@ -24,12 +24,6 @@ class DispatchJob : public tasker::Job {
         int32_t validation_code;
         std::string root_dir = get_root();
 
-        std::string result_id = gen_random(8);
-
-        command = command + " -d result_" + result_id;
-
-        spdlog::info("Modified dsp command with destination {}", command);
-
         this->dispatch_command = new DispatchCommand(command);
         this->dispatch_command->Parse(&validation_code, &validation_msg);
         if (validation_code != 0) {

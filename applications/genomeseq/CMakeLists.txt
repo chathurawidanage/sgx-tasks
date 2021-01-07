@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
 project(sgx-genomic)
 
-add_library(commands SHARED commands.cpp)
+add_library(commands SHARED commands.cpp metadata.cpp)
 
 # Server executable
 add_executable(

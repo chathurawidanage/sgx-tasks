@@ -3,6 +3,7 @@
 #include <cxxopts.hpp>
 #include <filesystem>
 
+#include "metadata.hpp"
 #include "spdlog/spdlog.h"
 
 std::string create_response(int32_t error_code, std::string msg) {
@@ -160,7 +161,7 @@ void DispatchCommand::Parse(int32_t *code, std::string *msg) {
     tokenize(this->command, args);
 
     cxxopts::Options options("dsp", "Dispatch Command Handler");
-    options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("b,bmer", "Size of su", cxxopts::value<std::int32_t>())("i,index", "Index ID", cxxopts::value<std::string>())("s,source", "Source File", cxxopts::value<std::vector<std::string>>())("d,destination", "Destination Folder", cxxopts::value<std::string>());
+    options.add_options()("p,partitions", "No of partitions", cxxopts::value<int32_t>())("b,bmer", "Size of su", cxxopts::value<std::int32_t>())("i,index", "Index ID", cxxopts::value<std::string>())("s,source", "Source File", cxxopts::value<std::vector<std::string>>())("d,destination", "Destination Folder", cxxopts::value<std::string>())("g,segment", "Segment", cxxopts::value<int32_t>());
 
     auto results = options.parse(args->size(), args->data());
 
@@ -170,6 +171,7 @@ void DispatchCommand::Parse(int32_t *code, std::string *msg) {
     this->pnum = results["p"].as<std::int32_t>();
     this->index_id = results["i"].as<std::string>();
     this->destination = root_dir + results["d"].as<std::string>();
+    this->segment = results["g"].as<int32_t>();
 
     auto inputs = results["s"].as<std::vector<std::string>>();
     this->input1 = root_dir + inputs[0];
@@ -209,5 +211,43 @@ void SearchCommand::Validate(int32_t *code, std::string *msg) {
         *code = 404;
     } else {
         *code = 0;
+    }
+}
+
+void SearchClientCommand::Parse(int32_t *code, std::string *msg) {
+    spdlog::info("Parsing seatch command....");
+    std::shared_ptr<std::vector<const char *>> args;
+    tokenize(this->command, args);
+
+    cxxopts::Options options("mem", "Search Command Handler");
+    options.add_options()("s,source", "Source File", cxxopts::value<std::string>())("i,index", "Index File", cxxopts::value<std::string>())("d,destination", "Destination sam file", cxxopts::value<std::string>());
+
+    auto results = options.parse(args->size(), args->data());
+
+    this->src_file = get_root() + "/" + results["s"].as<std::string>();
+    this->index_id = results["i"].as<std::string>();
+    this->dst_file = get_root() + "/" + results["d"].as<std::string>();
+
+    spdlog::info("Validating seatch command....");
+    this->Validate(code, msg);
+}
+
+void SearchClientCommand::Validate(int32_t *code, std::string *msg) {
+    if (!std::filesystem::exists(this->src_file)) {
+        *msg = create_response(404, "File " + src_file + " doesn't exists");
+        *code = 404;
+    } else if (!std::filesystem::exists(this->GetIndexFile())) {
+        *msg = create_response(404, "File " + this->GetIndexFile() + " doesn't exists");
+        *code = 404;
+    } else {
+        // validate index
+        spdlog::info("Validating metadata...");
+        auto meta = Metadata::Load(this->GetIndexId());
+        if (meta->Exists()) {
+            *code = 0;
+        } else {
+            *code = 404;
+            *msg = "Couldn't read metadata of " + this->index_id;
+        }
     }
 }

@@ -6,6 +6,7 @@
 #include <list>
 #include <queue>
 #include <set>
+#include <string>
 #include <thread>
 #include <unordered_map>
 
@@ -16,6 +17,7 @@
 #include "job.hpp"
 #include "jobs/job_handlers.hpp"
 #include "messages.hpp"
+#include "metadata.hpp"
 #include "spdlog/spdlog.h"
 #include "uuid.hpp"
 #include "worker_handler.hpp"
@@ -26,9 +28,28 @@ std::string root_dir = get_root();
 std::mutex indices_lock;
 std::vector<std::shared_ptr<Index>> indices{};
 
+void build_index() {
+    spdlog::info("Building index... Scanning directory {}", root_dir);
+    for (auto &p : std::filesystem::recursive_directory_iterator(root_dir)) {
+        if (p.is_directory() && p.path().filename().generic_string().rfind("index", 0) == 0) {
+            spdlog::info("Found index {}", p.path().filename().generic_string());
+            auto meta = Metadata::Load(p.path().filename().generic_string());
+            if (meta->Exists()) {
+                indices.push_back(
+                    std::make_shared<Index>(meta->GetPartitions(), meta->GetId(), meta->GetSource()));
+            } else {
+                spdlog::warn("Found an index without metadata...");
+            }
+        }
+    }
+}
+
 int main(int argc, char *argv[]) {
     spdlog::set_level(spdlog::level::info);
     // spdlog::set_pattern("[%H:%M:%S %z] [%l] [trd %t] %v");
+
+    // scan existing index
+    build_index();
 
     std::shared_ptr<tasker::Driver> driver = std::make_shared<tasker::Driver>();
 
@@ -57,8 +78,8 @@ int main(int argc, char *argv[]) {
                             indices.push_back(std::make_shared<Index>(partitions, index_id, src_file));
                             indices_lock.unlock();
                         }));
-        } else if (task_cmd.compare("dsp") == 0) {
-            HandleDispatch(msg, client_id, driver);
+        } else if (task_cmd.compare("mem") == 0) {
+            HandleSearch(msg, client_id, driver);
         } else if (task_cmd.compare("ls") == 0) {
             spdlog::info("Handling list commnad...");
             indices_lock.lock();
