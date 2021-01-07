@@ -129,7 +129,7 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
     dispatch_jobs->Execute();
 }
 
-void HandletSearch(std::string msg, std::string client_id,
+void HandleSearch(std::string msg, std::string client_id,
                   std::shared_ptr<tasker::Driver> driver) {
     spdlog::info("Handling search command...");
     SearchClientCommand search_command(msg);
