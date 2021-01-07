@@ -220,13 +220,12 @@ void SearchClientCommand::Parse(int32_t *code, std::string *msg) {
     tokenize(this->command, args);
 
     cxxopts::Options options("mem", "Search Command Handler");
-    options.add_options()("s,source", "Source File", cxxopts::value<std::string>())("i,index", "Index File", cxxopts::value<std::string>())("d,destination", "Destination sam file", cxxopts::value<std::string>());
+    options.add_options()("s,source", "Source File", cxxopts::value<std::string>())("i,index", "Index File", cxxopts::value<std::string>());
 
     auto results = options.parse(args->size(), args->data());
 
     this->src_file = get_root() + "/" + results["s"].as<std::string>();
     this->index_id = results["i"].as<std::string>();
-    this->dst_file = get_root() + "/" + results["d"].as<std::string>();
 
     spdlog::info("Validating seatch command....");
     this->Validate(code, msg);

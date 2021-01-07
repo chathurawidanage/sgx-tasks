@@ -193,7 +193,6 @@ class SearchClientCommand : public tasker::Command {
    private:
     std::string src_file;
     std::string index_id;
-    std::string dst_file;
 
     void Validate(int32_t *code, std::string *msg);
 
@@ -213,10 +212,6 @@ class SearchClientCommand : public tasker::Command {
     std::string GetIndexFile() {
         std::string index_file = get_root() + "/" + this->index_id;
         return index_file;
-    }
-
-    std::string &DstFile() {
-        return this->dst_file;
     }
 };
 
