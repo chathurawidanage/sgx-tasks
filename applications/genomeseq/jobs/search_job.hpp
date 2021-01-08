@@ -12,23 +12,21 @@
 #include "worker_types.hpp"
 
 class SearchJob : public tasker::Job {
-
     std::shared_ptr<tasker::WorkerHandler> worker = nullptr;
 
     SearchCommand *search_command;
 
    public:
     SearchJob(std::string src_file,
-             std::string index_file,
-             std::string dst_file,
-             std::string job_id,
-             std::string client_id,
-             std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver) {
-        
+              std::string index_file,
+              std::string dst_file,
+              std::string job_id,
+              std::string client_id,
+              std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver) {
         std::string validation_msg;
         int32_t validation_code;
 
-        std::string cmd = "idx -s " + src_file+" -i "+index_file+" -d "+dst_file;
+        std::string cmd = "idx -s " + src_file + " -i " + index_file + " -d " + dst_file;
         this->search_command = new SearchCommand(cmd);
         this->search_command->Parse(&validation_code, &validation_msg);
 
@@ -64,8 +62,8 @@ class SearchJob : public tasker::Job {
             this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_SECURE_GRAPHENE);
             if (this->worker != nullptr) {
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
-                spdlog::info("Sending command to worker {}", this->index_command->GetCommand());
-                this->worker->Send(this->index_command->GetCommand());
+                spdlog::info("Sending command to worker {}", this->search_command->GetCommand());
+                this->worker->Send(this->search_command->GetCommand());
             } else {
                 spdlog::debug("Couldn't get a worker allocated for job {}", this->job_id);
             }

@@ -1,5 +1,7 @@
 #ifndef D1147A7C_FF42_4F4E_9F40_AAE8053CFAA5
 #define D1147A7C_FF42_4F4E_9F40_AAE8053CFAA5
+#include <fstream>
+
 #include "dispatch_job.hpp"
 #include "metadata.hpp"
 #include "partition_job.hpp"
@@ -86,7 +88,10 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
                       std::shared_ptr<tasker::Driver> driver) {
     spdlog::info("Handling dispatch jobs...");
     auto meta = Metadata::Load(search_command.GetIndexId());
+
     int32_t partitions = meta->GetPartitions();
+    std::string result_id = gen_random(8);
+    std::string results_folder = "results_" + result_id;
 
     std::shared_ptr<tasker::Jobs> dispatch_jobs = std::make_shared<tasker::Jobs>(
         std::make_shared<std::function<void(int32_t, int32_t, std::string)>>(
@@ -96,9 +101,35 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
                 if (failed_count != 0) {
                     spdlog::warn("{} of the dispatch jobs has failed...", failed_count);
                 } else {
+                    spdlog::info("Merging maxinf....");
+
+                    int64_t maxinf_total;
+                    // merge max inf
+                    for (size_t i = 0; i < partitions; i++) {
+                        std::string maxinf_f = get_root() + "/" + results_folder + "/maxinf-" + std::to_string(i + 1);
+                        if (std::filesystem::exists(maxinf_f)) {
+                            std::ifstream maxinfi(maxinf_f);
+                            int32_t maxinf_val = 0;
+                            maxinfi >> maxinf_val;
+                            maxinfi.close();
+                            maxinf_total += maxinf_val;
+                        } else {
+                            driver->SendToClient(client_id, "Couldn't find maxinf for partition " + std::to_string(i + 1) + ". Operation aborted.");
+                            break;
+                        }
+                    }
+
+                    // write to maxinf
+                    std::ofstream ofs;
+                    ofs.open(get_root() + "/" + results_folder + "/maxinf", std::ofstream::out | std::ofstream::app);
+                    ofs << "\n";
+                    ofs << maxinf_total;
+                    ofs.close();
+
                     spdlog::info("Sending dispatch response to the client...");
 
                     // schedule search jobs
+                    driver->SendToClient(client_id, "Dispatch done, search left");
                 }
             }),
         std::make_shared<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>>(
@@ -112,9 +143,6 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
                 spdlog::info("Dispatch completed {}/{}, Failures : {}", completed_jobs, partitions, failed_jobs);
             }),
         driver);
-
-    std::string result_id = gen_random(8);
-    std::string results_folder = "results_" + result_id;
 
     for (size_t i = 0; i < partitions; i++) {
         std::string job_id = gen_random(16);
