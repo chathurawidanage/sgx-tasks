@@ -160,7 +160,7 @@ void DispatchCommand::Validate(int32_t *code, std::string *msg) {
         *code = 404;
         *msg = "The input file doesn't exists at /" + this->GetInput1();
         return;
-    } else if (this->se != 0 && !std::filesystem::exists(this->GetInput2())) {
+    } else if (this->se == 0 && !std::filesystem::exists(this->GetInput2())) {
         *code = 404;
         *msg = "The second input file doesn't exists at /" + this->GetInput2();
         return;
