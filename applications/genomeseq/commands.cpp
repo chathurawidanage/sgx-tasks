@@ -154,6 +154,17 @@ void DispatchCommand::Validate(int32_t *code, std::string *msg) {
         spdlog::info("Copying maxinf from {} to {}", this->GetIndexFolder() + "/maxinf", this->destination + "/maxinf");
         std::filesystem::copy(this->GetIndexFolder() + "/maxinf", this->destination + "/maxinf");
     }
+
+    // check input folder
+    if (!std::filesystem::exists(this->GetInput1())) {
+        *code = 404;
+        *msg = "The input file doesn't exists at /" + this->GetInput1();
+        return;
+    } else if (this->se != 0 && !std::filesystem::exists(this->GetInput2())) {
+        *code = 404;
+        *msg = "The second input file doesn't exists at /" + this->GetInput2();
+        return;
+    }
 }
 
 void DispatchCommand::Parse(int32_t *code, std::string *msg) {
@@ -174,10 +185,10 @@ void DispatchCommand::Parse(int32_t *code, std::string *msg) {
     this->segment = results["g"].as<int32_t>();
 
     auto inputs = results["s"].as<std::vector<std::string>>();
-    this->input1 = root_dir + inputs[0];
+    this->input1 = inputs[0];
     if (inputs.size() > 1) {
         this->se = 0;
-        this->input2 = root_dir + inputs[1];
+        this->input2 = inputs[1];
     }
     this->Validate(code, msg);
 }
