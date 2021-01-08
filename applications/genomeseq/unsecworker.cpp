@@ -76,6 +76,24 @@ int main(int argc, char *argv[]) {
             std::string resp = create_response(status);
             worker.Send(msg_cmd, resp);
             spdlog::info("Sent response to driver {}", resp);
+        } else if (cmd.compare(mem_command) == 0) {
+            spdlog::info("Handling index command...");
+            auto mem_command = SearchCommand(msg);
+            mem_command.Parse(&validation_code, &validation_msg);
+
+            if (validation_code != 0) {
+                worker.Send(msg_cmd, validation_msg);
+                return;
+            }
+
+            std::string sys_command = "SGX=1 /root/graphene-bwa/pal_loader /root/graphene-bwa/bwa mem " + mem_command.GetIndexFile() + " " + mem_command.GetSrcFile() + " > " + mem_command.GetDstFile();
+            spdlog::info("Executing command {}", sys_command);
+            int status = system(sys_command.c_str());
+
+            std::string resp = create_response(status);
+            worker.Send(msg_cmd, resp);
+            spdlog::info("Sent response to driver {}", resp);
+
         } else {
             std::string resp = create_response(404, "Unknown command " + msg_cmd);
             worker.Send(msg_cmd, resp);

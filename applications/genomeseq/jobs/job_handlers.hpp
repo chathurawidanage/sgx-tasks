@@ -122,8 +122,8 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
                     // write to maxinf
                     std::ofstream ofs;
                     ofs.open(get_root() + "/" + results_folder + "/maxinf", std::ofstream::out | std::ofstream::app);
-                    ofs << "\n";
                     ofs << maxinf_total;
+                    ofs << "\n";
                     ofs.close();
 
                     spdlog::info("Sending dispatch response to the client...");

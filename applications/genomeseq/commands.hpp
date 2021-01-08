@@ -235,7 +235,7 @@ class SearchCommand : public tasker::Command {
         return this->index_file;
     }
 
-    std::string &DstFile() {
+    std::string &GetDstFile() {
         return this->dst_file;
     }
 };
