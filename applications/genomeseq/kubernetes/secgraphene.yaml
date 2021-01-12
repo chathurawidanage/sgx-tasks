@@ -26,11 +26,11 @@ spec:
             path: /
       containers:
         - name: tasker
-          image: cwidanage/graphene-bwa:0.01
+          image: cwidanage/tasker-graphene:0.01
           command: ["/bin/sh", "-c"]
           args:
             [
-              "cd /root/graphene/ && make && cd /root/graphene-bwa && SGX=1 ./pal_loader bwa",
+              "cd /root/graphene/ && make && cd /root/graphene-bwa && make clean && make SGX=1 && /sgx-tasks/build/applications/genomeseq/unsecworker tcp://tasker-server-worker:5050",
             ]
           env:
             - name: ENV_ROOT_PATH

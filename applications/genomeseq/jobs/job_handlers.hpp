@@ -84,6 +84,51 @@ void HandleIndex(std::string msg, std::string client_id,
     driver->GetExecutor()->AddJob(prt_job);
 }
 
+void ScheduleSearch(std::string index_id, std::string result_id,
+                    std::string client_id,
+                    int32_t partitions, std::shared_ptr<tasker::Driver> driver) {
+    spdlog::info("Handling search jobs...");
+
+    std::shared_ptr<tasker::Jobs> search_jobs = std::make_shared<tasker::Jobs>(
+        std::make_shared<std::function<void(int32_t, int32_t, std::string)>>(
+            [=](int32_t failed_count, int32_t failed_code, std::string msg) {
+                // on all jobs done
+                spdlog::info("All search jobs have been completed.");
+                if (failed_count != 0) {
+                    spdlog::warn("{} of the search jobs has failed...", failed_count);
+                } else {
+                    // schedule search jobs
+                    driver->SendToClient(client_id, "Search done, search left");
+                }
+            }),
+        std::make_shared<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>>(
+            [=](std::string job_id, int32_t code, std::string msg, int32_t failed_jobs, int32_t completed_jobs) {
+                // on one of the jobs done
+                if (code != 0 && failed_jobs == 1) {
+                    // this is the first failed job, notify client
+                    std::string error_msg = "Search failed for job " + job_id + ". " + msg;
+                    driver->SendToClient(client_id, tasker::GetCommand(tasker::Commands::MESSAGE), error_msg);
+                }
+                spdlog::info("Search completed {}/{}, Failures : {}", completed_jobs, partitions, failed_jobs);
+            }),
+        driver);
+
+    for (size_t i = 0; i < partitions; i++) {
+        std::string job_id = gen_random(16);
+        std::string input_file = get_root() + "/" + result_id + "/mread-" + std::to_string(i + 1) + ".fa";
+        std::string index_file = get_root() + "/" + index_id + "/mref-" + std::to_string(i + 1) + ".fa";
+        std::string dest_file = get_root() + "/" + index_id + "/aln-" + std::to_string(i + 1) + ".sam";
+        std::string msg = "mem -s " + input_file + " -i " + index_file + " -d " + dest_file;
+        spdlog::info("Generated search command {}", msg);
+        std::shared_ptr<DispatchJob> dsp_job = std::make_shared<DispatchJob>(msg, job_id, client_id,
+                                                                             driver);
+        search_jobs->AddJob(dsp_job);
+    }
+
+    spdlog::info("Scheduling search jobs...");
+    search_jobs->Execute();
+}
+
 void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id,
                       std::shared_ptr<tasker::Driver> driver) {
     spdlog::info("Handling dispatch jobs...");
@@ -92,6 +137,7 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
     int32_t partitions = meta->GetPartitions();
     std::string result_id = gen_random(8);
     std::string results_folder = "results_" + result_id;
+    std::string index_id = search_command.GetIndexId();
 
     std::shared_ptr<tasker::Jobs> dispatch_jobs = std::make_shared<tasker::Jobs>(
         std::make_shared<std::function<void(int32_t, int32_t, std::string)>>(
@@ -129,7 +175,7 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
                     spdlog::info("Sending dispatch response to the client...");
 
                     // schedule search jobs
-                    driver->SendToClient(client_id, "Dispatch done, search left");
+                    ScheduleSearch(index_id, result_id, client_id, partitions, driver);
                 }
             }),
         std::make_shared<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>>(
@@ -137,7 +183,7 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
                 // on one of the jobs done
                 if (code != 0 && failed_jobs == 1) {
                     // this is the first failed job, notify client
-                    std::string error_msg = "Search failed for job " + job_id + ". " + msg;
+                    std::string error_msg = "Dispatch failed for job " + job_id + ". " + msg;
                     driver->SendToClient(client_id, tasker::GetCommand(tasker::Commands::MESSAGE), error_msg);
                 }
                 spdlog::info("Dispatch completed {}/{}, Failures : {}", completed_jobs, partitions, failed_jobs);

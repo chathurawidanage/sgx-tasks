@@ -80,6 +80,9 @@ int main(int argc, char *argv[]) {
                         }));
         } else if (task_cmd.compare("mem") == 0) {
             HandleSearch(msg, client_id, driver);
+        } else if (task_cmd.compare("serch") == 0) {
+            // test search
+            ScheduleSearch("index_9xxtn44p", "results_6tqn942f", client_id, 12, driver);
         } else if (task_cmd.compare("ls") == 0) {
             spdlog::info("Handling list commnad...");
             indices_lock.lock();
