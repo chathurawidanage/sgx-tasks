@@ -86,7 +86,8 @@ int main(int argc, char *argv[]) {
                 return;
             }
 
-            std::string sys_command = "SGX=1 /root/graphene-bwa/pal_loader /root/graphene-bwa/bwa mem " + mem_command.GetIndexFile() + " " + mem_command.GetSrcFile() + " > " + mem_command.GetDstFile();
+            // std::string sys_command = "SGX=1 /root/graphene-bwa/pal_loader /root/graphene-bwa/bwa mem " + mem_command.GetIndexFile() + " " + mem_command.GetSrcFile() + " > " + mem_command.GetDstFile();
+            std::string sys_command = "bwa mem " + mem_command.GetIndexFile() + " " + mem_command.GetSrcFile() + " > " + mem_command.GetDstFile();
             spdlog::info("Executing command {}", sys_command);
             int status = system(sys_command.c_str());
 

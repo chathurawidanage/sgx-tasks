@@ -118,7 +118,7 @@ void ScheduleSearch(std::string index_id, std::string result_id,
         std::string job_id = gen_random(16);
         std::string input_file = get_root() + "/" + result_id + "/mread-" + std::to_string(i + 1) + ".fa";
         std::string index_file = get_root() + "/" + index_id + "/mref-" + std::to_string(i + 1) + ".fa";
-        std::string dest_file = get_root() + "/" + index_id + "/aln-" + std::to_string(i + 1) + ".sam";
+        std::string dest_file = get_root() + "/" + result_id + "/aln-" + std::to_string(i + 1) + ".sam";
         // std::string msg = "mem -s " + input_file + " -i " + index_file + " -d " + dest_file;
         // spdlog::info("Generated search command {}", msg);
         std::shared_ptr<SearchJob> src_job = std::make_shared<SearchJob>(input_file, index_file, dest_file,
