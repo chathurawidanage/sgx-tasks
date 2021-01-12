@@ -26,7 +26,7 @@ class SearchJob : public tasker::Job {
         std::string validation_msg;
         int32_t validation_code;
 
-        std::string cmd = "idx -s " + src_file + " -i " + index_file + " -d " + dst_file;
+        std::string cmd = "mem -s " + src_file + " -i " + index_file + " -d " + dst_file;
         this->search_command = new SearchCommand(cmd);
         this->search_command->Parse(&validation_code, &validation_msg);
 
