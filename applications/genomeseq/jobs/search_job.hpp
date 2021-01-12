@@ -1,5 +1,5 @@
-#ifndef FAD2E185_CEDB_48F5_A5D8_CECBBEC2C734
-#define FAD2E185_CEDB_48F5_A5D8_CECBBEC2C734
+#ifndef A7483C2B_7054_48CD_B89A_4CFA103028FE
+#define A7483C2B_7054_48CD_B89A_4CFA103028FE
 
 #include "commands.hpp"
 #include "driver.hpp"
@@ -82,4 +82,4 @@ class SearchJob : public tasker::Job {
         delete this->search_command;
     }
 };
-#endif /* FAD2E185_CEDB_48F5_A5D8_CECBBEC2C734 */
+#endif /* A7483C2B_7054_48CD_B89A_4CFA103028FE */

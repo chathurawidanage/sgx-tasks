@@ -5,6 +5,7 @@
 #include "dispatch_job.hpp"
 #include "metadata.hpp"
 #include "partition_job.hpp"
+#include "search_job.hpp"
 #include "spdlog/spdlog.h"
 
 void ScheduleIndexJobs(std::string index_id, int32_t partitions, std::string client_id,
@@ -118,11 +119,11 @@ void ScheduleSearch(std::string index_id, std::string result_id,
         std::string input_file = get_root() + "/" + result_id + "/mread-" + std::to_string(i + 1) + ".fa";
         std::string index_file = get_root() + "/" + index_id + "/mref-" + std::to_string(i + 1) + ".fa";
         std::string dest_file = get_root() + "/" + index_id + "/aln-" + std::to_string(i + 1) + ".sam";
-        std::string msg = "mem -s " + input_file + " -i " + index_file + " -d " + dest_file;
-        spdlog::info("Generated search command {}", msg);
-        std::shared_ptr<DispatchJob> dsp_job = std::make_shared<DispatchJob>(msg, job_id, client_id,
-                                                                             driver);
-        search_jobs->AddJob(dsp_job);
+        // std::string msg = "mem -s " + input_file + " -i " + index_file + " -d " + dest_file;
+        // spdlog::info("Generated search command {}", msg);
+        std::shared_ptr<SearchJob> src_job = std::make_shared<SearchJob>(input_file, index_file, dest_file,
+                                                                         job_id, client_id, driver);
+        search_jobs->AddJob(src_job);
     }
 
     spdlog::info("Scheduling search jobs...");
