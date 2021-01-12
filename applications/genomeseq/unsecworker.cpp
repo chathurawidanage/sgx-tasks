@@ -77,7 +77,7 @@ int main(int argc, char *argv[]) {
             worker.Send(msg_cmd, resp);
             spdlog::info("Sent response to driver {}", resp);
         } else if (cmd.compare(mem_command) == 0) {
-            spdlog::info("Handling index command...");
+            spdlog::info("Handling mem command...");
             auto mem_command = SearchCommand(msg);
             mem_command.Parse(&validation_code, &validation_msg);
 
