@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <string>
 
@@ -6,7 +7,7 @@
 
 namespace tasker {
 class Client {
-   private:
+  private:
     std::string SPACE = " ";
     zmq::socket_t *socket;
     const std::string id;
@@ -31,17 +32,16 @@ class Client {
         zmq::message_t message(final_message.size());
         std::memcpy(message.data(), final_message.data(), final_message.size());
 
-        //std::cout << "Sending message : " << message.to_string() << std::endl;
+        // std::cout << "Sending message : " << message.to_string() << std::endl;
         socket->send(message, zmq::send_flags::none);
     }
 
-   public:
-    Client(const std::string &id, const std::string &server_url) : id(id), server_url(server_url) {
-    }
+  public:
+    Client(const std::string &id, const std::string &server_url) : id(id), server_url(server_url) {}
 
     int Start() {
-        //connect to the driver
-        zmq::context_t ctx{1};  // 1 IO thread
+        // connect to the driver
+        zmq::context_t ctx{1}; // 1 IO thread
 
         this->socket = new zmq::socket_t{ctx, zmq::socket_type::dealer};
         this->socket->setsockopt(ZMQ_IDENTITY, this->id.c_str(), this->id.size());
@@ -77,6 +77,7 @@ class Client {
             std::string line;
             std::cout << "client$ ";
             std::getline(std::cin, line);
+            auto start = std::chrono::high_resolution_clock::now();
             Send(cmd, line);
 
             zmq::message_t request;
@@ -84,6 +85,7 @@ class Client {
             // receive a request from client
             std::cout << "Waiting for response.." << std::endl;
             socket->recv(request, zmq::recv_flags::none);
+            auto stop = std::chrono::high_resolution_clock::now();
 
             std::string msg = request.to_string();
             std::string cmd = msg.substr(0, 3);
@@ -99,11 +101,12 @@ class Client {
             } else {
                 std::cout << "Unknown message : " << msg << std::endl;
             }
+            std::cout << "Command completed in " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start) << "ms" << std::endl;
         }
         return 0;
     }
 };
-}  // namespace tasker
+} // namespace tasker
 
 int main(int argc, char *argv[]) {
     std::string server_url = "tcp://localhost:5000";
