@@ -39,7 +39,11 @@ class Client {
   public:
     Client(const std::string &id, const std::string &server_url) : id(id), server_url(server_url) {}
 
-    int Start() {
+    int ExecAndDie(std::string command) { Start(true, command); }
+
+    int Start() { return Start(false, ""); }
+
+    int Start(bool execOnce, std::string command) {
         // connect to the driver
         zmq::context_t ctx{1}; // 1 IO thread
 
@@ -73,10 +77,14 @@ class Client {
         cmd = tasker::GetCommand(tasker::MESSAGE);
 
         // now start continuous listening
-        while (true) {
-            std::string line;
-            std::cout << "client$ ";
-            std::getline(std::cin, line);
+        do {
+            std::string line = command;
+            if (!execOnce) {
+                std::cout << "client$ ";
+                std::getline(std::cin, line);
+            } else {
+                std::cout << "Executing command : " << line << std::endl;
+            }
             auto start = std::chrono::high_resolution_clock::now();
             Send(cmd, line);
 
@@ -101,8 +109,8 @@ class Client {
             } else {
                 std::cout << "Unknown message : " << msg << std::endl;
             }
-            std::cout << "Command completed in " << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start) << "ms" << std::endl;
-        }
+            std::cout << "Command completed in " << std::chrono::duration_cast<std::chrono::seconds>(stop - start).count() << "s" << std::endl;
+        } while (!execOnce);
         return 0;
     }
 };
@@ -110,10 +118,16 @@ class Client {
 
 int main(int argc, char *argv[]) {
     std::string server_url = "tcp://localhost:5000";
-    if (argc == 3) {
+    if (argc >= 3) {
         server_url = argv[2];
     }
     tasker::Client client(argv[1], server_url);
-    client.Start();
+
+    if (argc > 3) {
+        client.ExecAndDie(argv[3]);
+    } else {
+        client.Start();
+    }
+
     return 0;
 }

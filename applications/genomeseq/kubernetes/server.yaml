@@ -20,9 +20,12 @@ spec:
             # URL for the NFS server
             server: 10.99.73.22
             path: /
+        - name: gfs-volume
+          hostPath:
+            path: /mnt
       containers:
         - name: tasker
-          image: cwidanage/tasker:latest
+          image: cwidanage/tasker:0.44
           command: ["/sgx-tasks/build/applications/genomeseq/server"]
           ports:
             - containerPort: 5000
@@ -32,7 +35,7 @@ spec:
             - name: ENV_ROOT_PATH
               value: "/data/"
           volumeMounts:
-            - name: nfs-volume
+            - name: gfs-volume
               mountPath: /data
           imagePullPolicy: Always
           resources:
