@@ -78,6 +78,8 @@ class Client {
 
         bool update_msg = false;
 
+        auto start = std::chrono::high_resolution_clock::now();
+
         // now start continuous listening
         do {
             std::string line = command;
@@ -88,7 +90,7 @@ class Client {
                 } else {
                     std::cout << "Executing command : " << line << std::endl;
                 }
-                //auto start = std::chrono::high_resolution_clock::now();
+                start = std::chrono::high_resolution_clock::now();
                 Send(cmd, line);
             } else {
                 update_msg = false;
@@ -97,7 +99,7 @@ class Client {
             zmq::message_t request;
 
             // receive a request from client
-            std::cout << "Waiting for response.." << std::endl;
+            //std::cout << "Waiting for response.." << std::endl;
             socket->recv(request, zmq::recv_flags::none);
             auto stop = std::chrono::high_resolution_clock::now();
 
@@ -111,6 +113,8 @@ class Client {
 
             int status = -1;
             if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
+                auto end = std::chrono::high_resolution_clock::now();
+                std::cout << "Command Execution Time : " << std::chrono::duration_cast<std::chrono::seconds>(end - start).count() << "sec."<<std::endl;
                 std::cout << params << std::endl;
             } else if (tasker::GetCommand(tasker::Commands::UPDATE).compare(cmd) == 0) {
                 std::cout << params << std::endl;
