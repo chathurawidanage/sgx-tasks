@@ -2,7 +2,7 @@ FROM ya0guang/sgx-u20:1.0
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update
-RUN apt-get -y install libfmt-dev libzmq3-dev libspdlog-dev cmake make git build-essential nano iputils-ping net-tools
+RUN apt-get -y install libfmt-dev libzmq3-dev libspdlog-dev cmake make git build-essential nano iputils-ping net-tools valgrind
 RUN git clone --recurse-submodules https://github.com/chathurawidanage/sgx-tasks.git
 RUN cd sgx-tasks git submodule update --init --recursive
 RUN cd sgx-tasks/applications/genomeseq/dida-sgx/ && git checkout origin/tasker-integration

@@ -14,7 +14,7 @@ void tasker::Job::NotifyCompletion(int32_t code, std::string msg) {
     long total_time = std::chrono::duration_cast<std::chrono::seconds>(now - this->job_scheduled_time).count();
     long processing_time = std::chrono::duration_cast<std::chrono::seconds>(now - this->worker_start_time).count();
 
-    this->driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::UPDATE), "Job  [" + this->GetName() + "] completed. Total time : " + std::to_string(total_time) + "sec. Processng Time : [" + std::to_string(processing_time) + "]");
+    this->driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::UPDATE), "Job [" + this->GetName() + "] completed. Total time : " + std::to_string(total_time) + "sec. Processng Time : " + std::to_string(processing_time) + "sec.");
 
     for (auto cb : this->on_complete_cbs) {
         (*(cb))(this->job_id, code, msg);
@@ -30,7 +30,7 @@ void tasker::Job::NotifyWorkerAllocated() {
 
     auto now = std::chrono::high_resolution_clock::now();
     long wait_time_for_allocation = std::chrono::duration_cast<std::chrono::seconds>(now - this->job_scheduled_time).count();
-    this->driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::UPDATE), "Worker allocated for  [" + this->GetName() + "] after " + std::to_string(wait_time_for_allocation) + "sec");
+    this->driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::UPDATE), "Worker allocated for [" + this->GetName() + "] after " + std::to_string(wait_time_for_allocation) + "sec");
 }
 
 bool tasker::Job::IsCompleted() { return this->completed; }
