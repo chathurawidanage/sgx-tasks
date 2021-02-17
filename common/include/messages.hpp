@@ -7,10 +7,11 @@ enum Commands {
     JOIN,
     MESSAGE,
     ACK,
-    PING
+    PING,
+    UPDATE
 };
 
-static const std::string CommandString[] = {"JIN", "MSG", "ACK", "PNG"};
+static const std::string CommandString[] = {"JIN", "MSG", "ACK", "PNG","UPD"};
 
 const std::string &GetCommand(int enumVal);
 

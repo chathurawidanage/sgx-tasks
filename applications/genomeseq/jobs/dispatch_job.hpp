@@ -19,7 +19,11 @@ class DispatchJob : public tasker::Job {
 
    public:
     DispatchJob(std::string command, std::string job_id, std::string client_id,
+                int partition_idx,
                 std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver) {
+
+        this->SetName("Dispatch-"+std::to_string(partition_idx));
+
         std::string validation_msg;
         int32_t validation_code;
         std::string root_dir = get_root();
@@ -44,6 +48,7 @@ class DispatchJob : public tasker::Job {
         if (worker == nullptr && !this->IsCompleted()) {
             this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_SECURE);
             if (this->worker != nullptr) {
+                this->NotifyWorkerAllocated();
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
 
                 spdlog::info("Sending command to worker {}", this->dispatch_command->GetCommand());

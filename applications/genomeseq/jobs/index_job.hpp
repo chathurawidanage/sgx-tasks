@@ -23,6 +23,9 @@ class IndexJob : public tasker::Job {
              int32_t partition_idx,
              std::string client_id,
              std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver) {
+
+        this->SetName("Indexing-" + std::to_string(partition_idx));
+
         std::string validation_msg;
         int32_t validation_code;
 
@@ -61,6 +64,7 @@ class IndexJob : public tasker::Job {
         if (worker == nullptr && !this->IsCompleted()) {
             this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_UNSECURE);
             if (this->worker != nullptr) {
+                this->NotifyWorkerAllocated();
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
                 spdlog::info("Sending command to worker {}", this->index_command->GetCommand());
                 this->worker->Send(this->index_command->GetCommand());

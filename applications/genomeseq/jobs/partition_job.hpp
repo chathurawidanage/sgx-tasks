@@ -25,6 +25,9 @@ class PartitionJob : public tasker::Job {
     PartitionJob(std::string command, std::string job_id, std::string client_id,
                  std::string index_id,
                  std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver), index_id(index_id) {
+
+        this->SetName("Partition-" + index_id);
+
         std::string validation_msg;
         int32_t validation_code;
 
@@ -79,6 +82,7 @@ class PartitionJob : public tasker::Job {
         if (worker == nullptr && !this->IsCompleted()) {
             this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_UNSECURE);
             if (this->worker != nullptr) {
+                this->NotifyWorkerAllocated();
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
 
                 spdlog::info("Sending command to worker {}", this->partition_command->GetCommand());

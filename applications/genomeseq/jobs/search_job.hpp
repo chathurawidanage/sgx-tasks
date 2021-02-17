@@ -20,9 +20,12 @@ class SearchJob : public tasker::Job {
     SearchJob(std::string src_file,
               std::string index_file,
               std::string dst_file,
+              int partition_idx,
               std::string job_id,
               std::string client_id,
               std::shared_ptr<tasker::Driver> driver) : Job(job_id, client_id, driver) {
+        this->SetName("Search-" + std::to_string(partition_idx));        
+    
         std::string validation_msg;
         int32_t validation_code;
 
@@ -61,6 +64,7 @@ class SearchJob : public tasker::Job {
         if (worker == nullptr && !this->IsCompleted()) {
             this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_SECURE_GRAPHENE);
             if (this->worker != nullptr) {
+                this->NotifyWorkerAllocated();
                 spdlog::info("Allocated worker {} to job {}", this->worker->GetId(), this->job_id);
                 spdlog::info("Sending command to worker {}", this->search_command->GetCommand());
                 this->worker->Send(this->search_command->GetCommand());

@@ -76,17 +76,23 @@ class Client {
 
         cmd = tasker::GetCommand(tasker::MESSAGE);
 
+        bool update_msg = false;
+
         // now start continuous listening
         do {
             std::string line = command;
-            if (!execOnce) {
-                std::cout << "client$ ";
-                std::getline(std::cin, line);
+            if (!update_msg) {
+                if (!execOnce) {
+                    std::cout << "client$ ";
+                    std::getline(std::cin, line);
+                } else {
+                    std::cout << "Executing command : " << line << std::endl;
+                }
+                //auto start = std::chrono::high_resolution_clock::now();
+                Send(cmd, line);
             } else {
-                std::cout << "Executing command : " << line << std::endl;
+                update_msg = false;
             }
-            auto start = std::chrono::high_resolution_clock::now();
-            Send(cmd, line);
 
             zmq::message_t request;
 
@@ -106,11 +112,14 @@ class Client {
             int status = -1;
             if (tasker::GetCommand(tasker::Commands::MESSAGE).compare(cmd) == 0) {
                 std::cout << params << std::endl;
+            } else if (tasker::GetCommand(tasker::Commands::UPDATE).compare(cmd) == 0) {
+                std::cout << params << std::endl;
+                update_msg = true;
             } else {
                 std::cout << "Unknown message : " << msg << std::endl;
             }
-            std::cout << "Command completed in " << std::chrono::duration_cast<std::chrono::seconds>(stop - start).count() << "s" << std::endl;
-        } while (!execOnce);
+            //std::cout << "Command completed in " << std::chrono::duration_cast<std::chrono::seconds>(stop - start).count() << "s" << std::endl;
+        } while (!execOnce || update_msg);
         return 0;
     }
 };
