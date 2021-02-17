@@ -2,6 +2,7 @@
 #define D1147A7C_FF42_4F4E_9F40_AAE8053CFAA5
 #include <fstream>
 #include <chrono>
+#include <map>
 
 #include "dispatch_job.hpp"
 #include "metadata.hpp"
@@ -9,12 +10,16 @@
 #include "search_job.hpp"
 #include "spdlog/spdlog.h"
 
+std::unordered_map<std::string, std::shared_ptr<tasker::Jobs>> job_handlers{};
+
 void ScheduleIndexJobs(std::string index_id, int32_t partitions, std::string client_id,
                        std::shared_ptr<tasker::Driver> driver,
                        std::string src_file,
                        std::shared_ptr<std::function<void(int32_t, std::string, std::string)>> create_index) {
 
-    auto start = std::chrono::high_resolution_clock::now();    
+    auto start = std::chrono::high_resolution_clock::now(); 
+
+    std::string jobs_id = gen_random(16);   
 
     std::shared_ptr<tasker::Jobs> indexing_jobs = std::make_shared<tasker::Jobs>(
         std::make_shared<std::function<void(int32_t, int32_t, std::string)>>(
@@ -36,14 +41,10 @@ void ScheduleIndexJobs(std::string index_id, int32_t partitions, std::string cli
                     spdlog::info("Calling db callback...");
                     (*create_index)(partitions, index_id, src_file);
                 }
+                job_handlers.erase(jobs_id);
             }),
         std::make_shared<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>>(
             [=](std::string job_id, int32_t code, std::string msg, int32_t failed_jobs, int32_t completed_jobs) {
-                auto now = std::chrono::high_resolution_clock::now(); 
-                long time = std::chrono::duration_cast<std::chrono::seconds>(now - start).count();
-
-                driver->SendToClient(client_id, tasker::GetCommand(tasker::Commands::UPDATE), "Indexing jobs " + job_id + "completed in " + std::to_string(time) + "sec with status "+std::to_string(code));  
-
                 // on one of the jobs done
                 if (code != 0 && failed_jobs == 1) {
                     // this is the first failed job, notify client
@@ -67,6 +68,7 @@ void ScheduleIndexJobs(std::string index_id, int32_t partitions, std::string cli
         indexing_jobs->AddJob(idx_job);
         spdlog::info("Added job for partition {}", idx + 1);
     }
+    job_handlers.insert(std::pair<std::string, std::shared_ptr<tasker::Jobs>>(jobs_id, indexing_jobs));
     indexing_jobs->Execute();
 }
 
@@ -103,6 +105,8 @@ void ScheduleSearch(std::string index_id, std::string result_id,
                     int32_t partitions, std::shared_ptr<tasker::Driver> driver) {
     spdlog::info("Handling search jobs...");
 
+    std::string jobs_id = gen_random(16);   
+
     std::shared_ptr<tasker::Jobs> search_jobs = std::make_shared<tasker::Jobs>(
         std::make_shared<std::function<void(int32_t, int32_t, std::string)>>(
             [=](int32_t failed_count, int32_t failed_code, std::string msg) {
@@ -114,6 +118,7 @@ void ScheduleSearch(std::string index_id, std::string result_id,
                     // schedule search jobs
                     driver->SendToClient(client_id, "Search done, search left");
                 }
+                job_handlers.erase(jobs_id);
             }),
         std::make_shared<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>>(
             [=](std::string job_id, int32_t code, std::string msg, int32_t failed_jobs, int32_t completed_jobs) {
@@ -140,6 +145,7 @@ void ScheduleSearch(std::string index_id, std::string result_id,
     }
 
     spdlog::info("Scheduling search jobs...");
+    job_handlers.insert(std::pair<std::string, std::shared_ptr<tasker::Jobs>>(jobs_id, search_jobs));
     search_jobs->Execute();
 }
 
@@ -152,6 +158,8 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
     std::string result_id = gen_random(8);
     std::string results_folder = "results_" + result_id;
     std::string index_id = search_command.GetIndexId();
+
+    std::string jobs_id = gen_random(16);   
 
     std::shared_ptr<tasker::Jobs> dispatch_jobs = std::make_shared<tasker::Jobs>(
         std::make_shared<std::function<void(int32_t, int32_t, std::string)>>(
@@ -191,6 +199,7 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
                     // schedule search jobs
                     ScheduleSearch(index_id, result_id, client_id, partitions, driver);
                 }
+                job_handlers.erase(jobs_id);
             }),
         std::make_shared<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>>(
             [=](std::string job_id, int32_t code, std::string msg, int32_t failed_jobs, int32_t completed_jobs) {
@@ -214,6 +223,7 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
     }
 
     spdlog::info("Scheduling dispatch jobs...");
+    job_handlers.insert(std::pair<std::string, std::shared_ptr<tasker::Jobs>>(jobs_id, dispatch_jobs));
     dispatch_jobs->Execute();
 }
 

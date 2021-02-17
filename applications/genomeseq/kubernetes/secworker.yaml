@@ -32,7 +32,6 @@ spec:
             [
               "cd /sgx-tasks/ && git pull && cd /sgx-tasks/applications/genomeseq/dida-sgx/ && git pull origin tasker-integration && cd /sgx-tasks/build/ && make && cd /sgx-tasks/build/applications/genomeseq/dida-sgx/sample/DIDA/ && ./didasgx tcp://tasker-server-worker:5050",
             ]
-          args: ["tcp://tasker-server-worker:5050"]
           env:
             - name: ENV_ROOT_PATH
               value: "/data/"

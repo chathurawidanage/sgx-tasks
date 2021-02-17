@@ -74,13 +74,12 @@ void tasker::Jobs::ReportJobCompletion(std::string job_id, int32_t code, std::st
     this->completions++;
     (*this->on_job_completed)(job_id, code, msg, this->failed_count, this->completions);
     if (completions == this->jobs.size()) {
+        auto now = std::chrono::high_resolution_clock::now();
+        long total_time = std::chrono::duration_cast<std::chrono::seconds>(now - this->jobs_scheduled_time).count();
+        this->driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::UPDATE), "Jobs group [" + this->jobs_name + "] completed in  " + std::to_string(total_time) + "sec");
+
         (*this->on_all_completed)(this->failed_count, this->latest_code, this->latest_msg);
     }
-
-    auto now = std::chrono::high_resolution_clock::now();
-    long total_time = std::chrono::duration_cast<std::chrono::seconds>(now - this->jobs_scheduled_time).count();
-
-    this->driver->SendToClient(this->client_id, tasker::GetCommand(tasker::Commands::UPDATE), "Jobs group [" + this->jobs_name + "] completed in  " + std::to_string(total_time) + "sec");
 }
 
 void tasker::Jobs::Execute() {

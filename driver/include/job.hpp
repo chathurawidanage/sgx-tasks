@@ -4,6 +4,7 @@
 #include <memory>
 #include <string>
 #include <chrono>
+#include <map>
 
 #include "driver.hpp"
 
@@ -53,8 +54,10 @@ class Job {
     virtual void Finalize();
 };
 
+
 class Jobs {
    private:
+
     std::vector<std::shared_ptr<tasker::Job>> jobs{};
     std::shared_ptr<std::function<void(int32_t, int32_t, std::string)>> on_all_completed;
     std::shared_ptr<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>> on_job_completed;
@@ -77,7 +80,7 @@ class Jobs {
    public:
     Jobs(std::shared_ptr<std::function<void(int32_t, int32_t, std::string)>> on_all_completed,
          std::shared_ptr<std::function<void(std::string, int32_t, std::string, int32_t, int32_t)>> on_job_completed,
-         std::shared_ptr<tasker::Driver> driver, std::string client_id, std::string jobs_name) : driver(driver), on_all_completed(on_all_completed), on_job_completed(on_job_completed), jobs_name(jobs_name), client_id(client_id) {
+         std::shared_ptr<tasker::Driver> driver, std::string client_id, std::string jobs_name) :driver(driver), on_all_completed(on_all_completed), on_job_completed(on_job_completed), jobs_name(jobs_name), client_id(client_id) {
              this->jobs_scheduled_time = std::chrono::high_resolution_clock::now();
     }
 
