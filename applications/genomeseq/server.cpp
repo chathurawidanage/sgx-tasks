@@ -75,6 +75,8 @@ int main(int argc, char *argv[]) {
         if (task_cmd.compare("index") == 0) {
             HandleIndex(msg, client_id, driver, std::make_shared<std::function<void(int32_t, std::string, std::string)>>([&](int32_t partitions, std::string index_id, std::string src_file) {
                             indices_lock.lock();
+                            auto meta = Metadata(index_id, src_file, partitions);
+                            meta.Write();
                             indices.push_back(std::make_shared<Index>(partitions, index_id, src_file));
                             indices_lock.unlock();
                         }));
