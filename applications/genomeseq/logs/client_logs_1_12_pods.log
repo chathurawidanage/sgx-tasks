@@ -1,0 +1,164 @@
+Connecting to the driver...
+Connected to the server...
+Ack recevied for join
+client$ ls
+Command Execution Time : 0sec.
+ID              SOURCE          PARTITIONS
+index_snzzj7xw  /data/hg38.fa   12
+
+(1) indices
+client$ index -s hg38.fa -p 12
+Worker allocated for [Partition-index_v2f2h8dr] after 9sec
+Job [Partition-index_v2f2h8dr] completed. Total time : 78sec. Processng Time : 68sec.
+Worker allocated for [Indexing-10] after 0sec
+Job [Indexing-10] completed. Total time : 369sec. Processng Time : 369sec.
+Worker allocated for [Indexing-11] after 369sec
+Job [Indexing-11] completed. Total time : 619sec. Processng Time : 249sec.
+Worker allocated for [Indexing-9] after 619sec
+Job [Indexing-9] completed. Total time : 949sec. Processng Time : 329sec.
+Worker allocated for [Indexing-8] after 949sec
+Job [Indexing-8] completed. Total time : 1238sec. Processng Time : 289sec.
+Worker allocated for [Indexing-7] after 1238sec
+Job [Indexing-7] completed. Total time : 1533sec. Processng Time : 294sec.
+Worker allocated for [Indexing-4] after 1533sec
+Job [Indexing-4] completed. Total time : 1791sec. Processng Time : 257sec.
+Worker allocated for [Indexing-6] after 1791sec
+Job [Indexing-6] completed. Total time : 2064sec. Processng Time : 273sec.
+Worker allocated for [Indexing-2] after 2064sec
+Job [Indexing-2] completed. Total time : 2319sec. Processng Time : 254sec.
+Worker allocated for [Indexing-3] after 2319sec
+Job [Indexing-3] completed. Total time : 2590sec. Processng Time : 271sec.
+Worker allocated for [Indexing-1] after 2590sec
+Job [Indexing-1] completed. Total time : 2859sec. Processng Time : 268sec.
+Worker allocated for [Indexing-5] after 2859sec
+Job [Indexing-5] completed. Total time : 3138sec. Processng Time : 279sec.
+Worker allocated for [Indexing-0] after 3139sec
+Job [Indexing-0] completed. Total time : 3458sec. Processng Time : 319sec.
+Jobs group [Indexing Group] completed in  3458sec
+All indexing jobs completed in 3458sec
+Command Execution Time : 3538sec.
+Indexing completed and assigned ID index_v2f2h8dr
+client$ index -s hg38.fa -p 12
+Worker allocated for [Partition-index_d241p8q3] after 9sec
+Job [Partition-index_d241p8q3] completed. Total time : 87sec. Processng Time : 78sec.
+Worker allocated for [Indexing-10] after 0sec
+Worker allocated for [Indexing-9] after 0sec
+Job [Indexing-9] completed. Total time : 335sec. Processng Time : 335sec.
+Worker allocated for [Indexing-7] after 336sec
+Job [Indexing-10] completed. Total time : 384sec. Processng Time : 384sec.
+Worker allocated for [Indexing-4] after 384sec
+Job [Indexing-7] completed. Total time : 630sec. Processng Time : 294sec.
+Worker allocated for [Indexing-3] after 630sec
+Job [Indexing-4] completed. Total time : 632sec. Processng Time : 247sec.
+Worker allocated for [Indexing-8] after 632sec
+Job [Indexing-3] completed. Total time : 903sec. Processng Time : 272sec.
+Worker allocated for [Indexing-5] after 903sec
+Job [Indexing-8] completed. Total time : 927sec. Processng Time : 294sec.
+Worker allocated for [Indexing-2] after 927sec
+Job [Indexing-5] completed. Total time : 1183sec. Processng Time : 279sec.
+Worker allocated for [Indexing-1] after 1183sec
+Job [Indexing-2] completed. Total time : 1192sec. Processng Time : 265sec.
+Worker allocated for [Indexing-11] after 1192sec
+Job [Indexing-11] completed. Total time : 1448sec. Processng Time : 255sec.
+Worker allocated for [Indexing-0] after 1448sec
+Job [Indexing-1] completed. Total time : 1453sec. Processng Time : 270sec.
+Worker allocated for [Indexing-6] after 1453sec
+Job [Indexing-6] completed. Total time : 1727sec. Processng Time : 273sec.
+Job [Indexing-0] completed. Total time : 1765sec. Processng Time : 317sec.
+Jobs group [Indexing Group] completed in  1765sec
+All indexing jobs completed in 1765sec
+Command Execution Time : 1853sec.
+Indexing completed and assigned ID index_d241p8q3
+client$ index -s hg38.fa -p 12
+Worker allocated for [Partition-index_f94p83pc] after 0sec
+Job [Partition-index_f94p83pc] completed. Total time : 27sec. Processng Time : 26sec.
+Worker allocated for [Indexing-8] after 0sec
+Worker allocated for [Indexing-6] after 0sec
+Worker allocated for [Indexing-9] after 0sec
+Worker allocated for [Indexing-4] after 0sec
+Job [Indexing-4] completed. Total time : 260sec. Processng Time : 259sec.
+Worker allocated for [Indexing-7] after 260sec
+Job [Indexing-8] completed. Total time : 305sec. Processng Time : 305sec.
+Worker allocated for [Indexing-5] after 305sec
+Job [Indexing-6] completed. Total time : 314sec. Processng Time : 314sec.
+Worker allocated for [Indexing-3] after 314sec
+Job [Indexing-9] completed. Total time : 319sec. Processng Time : 319sec.
+Worker allocated for [Indexing-2] after 319sec
+Job [Indexing-7] completed. Total time : 554sec. Processng Time : 294sec.
+Worker allocated for [Indexing-1] after 554sec
+Job [Indexing-3] completed. Total time : 563sec. Processng Time : 249sec.
+Worker allocated for [Indexing-10] after 563sec
+Job [Indexing-2] completed. Total time : 567sec. Processng Time : 248sec.
+Worker allocated for [Indexing-0] after 567sec
+Job [Indexing-5] completed. Total time : 596sec. Processng Time : 290sec.
+Worker allocated for [Indexing-11] after 596sec
+Job [Indexing-1] completed. Total time : 823sec. Processng Time : 269sec.
+Job [Indexing-11] completed. Total time : 849sec. Processng Time : 252sec.
+Job [Indexing-0] completed. Total time : 885sec. Processng Time : 318sec.
+Job [Indexing-10] completed. Total time : 959sec. Processng Time : 395sec.
+Jobs group [Indexing Group] completed in  959sec
+All indexing jobs completed in 959sec
+Command Execution Time : 987sec.
+Indexing completed and assigned ID index_f94p83pc
+client$ index -s hg38.fa -p 12
+Worker allocated for [Partition-index_dqtnrn3a] after 5sec
+Job [Partition-index_dqtnrn3a] completed. Total time : 57sec. Processng Time : 51sec.
+Worker allocated for [Indexing-9] after 0sec
+Worker allocated for [Indexing-7] after 0sec
+Worker allocated for [Indexing-10] after 0sec
+Worker allocated for [Indexing-5] after 0sec
+Worker allocated for [Indexing-11] after 0sec
+Worker allocated for [Indexing-4] after 0sec
+Worker allocated for [Indexing-8] after 0sec
+Worker allocated for [Indexing-3] after 0sec
+Job [Indexing-4] completed. Total time : 271sec. Processng Time : 271sec.
+Worker allocated for [Indexing-2] after 271sec
+Job [Indexing-11] completed. Total time : 298sec. Processng Time : 297sec.
+Worker allocated for [Indexing-1] after 298sec
+Job [Indexing-3] completed. Total time : 312sec. Processng Time : 311sec.
+Worker allocated for [Indexing-0] after 312sec
+Job [Indexing-7] completed. Total time : 318sec. Processng Time : 318sec.
+Worker allocated for [Indexing-6] after 318sec
+Job [Indexing-8] completed. Total time : 319sec. Processng Time : 319sec.
+Job [Indexing-5] completed. Total time : 324sec. Processng Time : 324sec.
+Job [Indexing-9] completed. Total time : 366sec. Processng Time : 366sec.
+Job [Indexing-10] completed. Total time : 407sec. Processng Time : 407sec.
+Job [Indexing-2] completed. Total time : 547sec. Processng Time : 275sec.
+Job [Indexing-1] completed. Total time : 571sec. Processng Time : 273sec.
+Job [Indexing-6] completed. Total time : 621sec. Processng Time : 303sec.
+Job [Indexing-0] completed. Total time : 662sec. Processng Time : 349sec.
+Jobs group [Indexing Group] completed in  662sec
+All indexing jobs completed in 662sec
+Command Execution Time : 719sec.
+Indexing completed and assigned ID index_dqtnrn3a
+client$ index -s hg38.fa -p 12
+Worker allocated for [Partition-index_9rfbtmn1] after 0sec
+Job [Partition-index_9rfbtmn1] completed. Total time : 212sec. Processng Time : 211sec.
+Worker allocated for [Indexing-11] after 0sec
+Worker allocated for [Indexing-9] after 0sec
+Worker allocated for [Indexing-6] after 0sec
+Worker allocated for [Indexing-8] after 0sec
+Worker allocated for [Indexing-5] after 0sec
+Worker allocated for [Indexing-4] after 0sec
+Worker allocated for [Indexing-10] after 0sec
+Worker allocated for [Indexing-3] after 0sec
+Worker allocated for [Indexing-7] after 0sec
+Worker allocated for [Indexing-2] after 0sec
+Worker allocated for [Indexing-1] after 0sec
+Worker allocated for [Indexing-0] after 0sec
+Job [Indexing-2] completed. Total time : 282sec. Processng Time : 282sec.
+Job [Indexing-4] completed. Total time : 282sec. Processng Time : 282sec.
+Job [Indexing-11] completed. Total time : 297sec. Processng Time : 297sec.
+Job [Indexing-5] completed. Total time : 317sec. Processng Time : 317sec.
+Job [Indexing-1] completed. Total time : 327sec. Processng Time : 327sec.
+Job [Indexing-6] completed. Total time : 332sec. Processng Time : 332sec.
+Job [Indexing-3] completed. Total time : 336sec. Processng Time : 336sec.
+Job [Indexing-8] completed. Total time : 337sec. Processng Time : 337sec.
+Job [Indexing-7] completed. Total time : 343sec. Processng Time : 343sec.
+Job [Indexing-0] completed. Total time : 380sec. Processng Time : 380sec.
+Job [Indexing-9] completed. Total time : 387sec. Processng Time : 386sec.
+Job [Indexing-10] completed. Total time : 427sec. Processng Time : 427sec.
+Jobs group [Indexing Group] completed in  427sec
+All indexing jobs completed in 427sec
+Command Execution Time : 640sec.
+Indexing completed and assigned ID index_9rfbtmn1
