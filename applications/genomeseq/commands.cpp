@@ -132,12 +132,13 @@ void ClientIndexCommand::Parse(int32_t *code, std::string *msg) {
 void DispatchCommand::Validate(int32_t *code, std::string *msg) {
     *code = 0;
 
-    spdlog::info("Creating destination folder {}", this->destination);
+    spdlog::info("Creating destination folder at {}", this->destination);
     std::filesystem::create_directories(this->destination);
 
     // TODO: copy max inf from one place to another
 
     //index exists
+    spdlog::info("Checking index exists...");
     if (!std::filesystem::exists(this->GetIndexFolder())) {
         *code = 404;
         *msg = "The index " + this->index_id + " doesn't exists";
@@ -145,17 +146,22 @@ void DispatchCommand::Validate(int32_t *code, std::string *msg) {
     }
 
     // check maxinf
+    spdlog::info("Checking maxinf exists...");
     if (!std::filesystem::exists(this->GetIndexFolder() + "/maxinf")) {
         *code = 404;
         *msg = "The maxinf file doesn't exists in /" + this->index_id;
         return;
-    } else if (!std::filesystem::exists(this->destination + +"/maxinf")) {
+    } 
+    
+    spdlog::info("Copying maxinf...");
+    if (!std::filesystem::exists(this->destination + +"/maxinf")) {
         // copy only if doesn't exist
         spdlog::info("Copying maxinf from {} to {}", this->GetIndexFolder() + "/maxinf", this->destination + "/maxinf");
         std::filesystem::copy(this->GetIndexFolder() + "/maxinf", this->destination + "/maxinf");
     }
 
     // check input folder
+    spdlog::info("Checking inputs...");
     if (!std::filesystem::exists(this->GetInput1())) {
         *code = 404;
         *msg = "The input file doesn't exists at /" + this->GetInput1();
