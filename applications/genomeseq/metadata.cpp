@@ -32,7 +32,7 @@ void Metadata::Write() {
 }
 
 std::shared_ptr<Metadata> Metadata::Load(std::string id) {
-    auto m = std::make_shared<Metadata>(id);
+    auto m = std::shared_ptr<Metadata>{new Metadata(id)}; // const is provate
     m->Read();
     return m;
 }
