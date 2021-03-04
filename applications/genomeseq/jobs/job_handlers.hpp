@@ -197,7 +197,7 @@ void ScheduleDispatch(SearchClientCommand& search_command, std::string client_id
                     spdlog::info("Sending dispatch response to the client...");
 
                     // schedule search jobs
-                    ScheduleSearch(index_id, result_id, client_id, partitions, driver);
+                    ScheduleSearch(index_id, results_folder, client_id, partitions, driver);
                 }
                 job_handlers.erase(jobs_id);
             }),

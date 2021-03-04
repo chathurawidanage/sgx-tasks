@@ -1,0 +1,32 @@
+Connecting to the driver...
+Connected to the server...
+Ack recevied for join
+client$ mem -i index_5hm8a7hz -s SRR062634.filt.fastq
+Worker allocated for [Dispatch-11] after 6sec
+Job [Dispatch-11] completed. Total time : 185sec. Processng Time : 178sec.
+Worker allocated for [Dispatch-10] after 185sec
+Job [Dispatch-10] completed. Total time : 344sec. Processng Time : 159sec.
+Worker allocated for [Dispatch-9] after 344sec
+Job [Dispatch-9] completed. Total time : 509sec. Processng Time : 164sec.
+Worker allocated for [Dispatch-8] after 509sec
+Job [Dispatch-8] completed. Total time : 678sec. Processng Time : 169sec.
+Worker allocated for [Dispatch-6] after 678sec
+Job [Dispatch-6] completed. Total time : 848sec. Processng Time : 169sec.
+Worker allocated for [Dispatch-7] after 848sec
+Job [Dispatch-7] completed. Total time : 1017sec. Processng Time : 169sec.
+Worker allocated for [Dispatch-5] after 1017sec
+Job [Dispatch-5] completed. Total time : 1192sec. Processng Time : 175sec.
+Worker allocated for [Dispatch-4] after 1193sec
+Job [Dispatch-4] completed. Total time : 1371sec. Processng Time : 178sec.
+Worker allocated for [Dispatch-3] after 1371sec
+Job [Dispatch-3] completed. Total time : 1546sec. Processng Time : 174sec.
+Worker allocated for [Dispatch-1] after 1546sec
+Job [Dispatch-1] completed. Total time : 1725sec. Processng Time : 179sec.
+Worker allocated for [Dispatch-2] after 1725sec
+Job [Dispatch-2] completed. Total time : 1902sec. Processng Time : 176sec.
+Worker allocated for [Dispatch-0] after 1902sec
+Job [Dispatch-0] completed. Total time : 2072sec. Processng Time : 170sec.
+Jobs group [Dispatch Group] completed in  2072sec
+Job [Search-0] completed. Total time : 0sec. Processng Time : 1614643293sec.
+Command Execution Time : 2073sec.
+Search failed for job 6v354vggjlz22w5a. MSG 404 File /data//q3rwdadb/mread-1.fa doesn't exists
