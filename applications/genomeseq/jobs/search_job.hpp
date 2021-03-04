@@ -62,7 +62,6 @@ class SearchJob : public tasker::Job {
 
     bool Progress() {
         if (worker == nullptr && !this->IsCompleted()) {
-            spdlog::info("Look for the worker type {}", TYPE_SECURE_GRAPHENE);
             this->worker = driver->GetExecutor()->AllocateWorker(*this, TYPE_SECURE_GRAPHENE);
             if (this->worker != nullptr) {
                 this->NotifyWorkerAllocated();

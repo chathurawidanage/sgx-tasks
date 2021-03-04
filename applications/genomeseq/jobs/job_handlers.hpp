@@ -116,7 +116,7 @@ void ScheduleSearch(std::string index_id, std::string result_id,
                     spdlog::warn("{} of the search jobs has failed...", failed_count);
                 } else {
                     // schedule search jobs
-                    driver->SendToClient(client_id, "Search done, search left");
+                    driver->SendToClient(client_id, tasker::GetCommand(tasker::Commands::MESSAGE), "Search completed. Merge if left.");
                 }
                 job_handlers.erase(jobs_id);
             }),
