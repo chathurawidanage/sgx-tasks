@@ -30,3 +30,258 @@ Jobs group [Dispatch Group] completed in  2072sec
 Job [Search-0] completed. Total time : 0sec. Processng Time : 1614643293sec.
 Command Execution Time : 2073sec.
 Search failed for job 6v354vggjlz22w5a. MSG 404 File /data//q3rwdadb/mread-1.fa doesn't exists
+
+
+
+
+
+-----
+
+
+Connecting to the driver...
+Connected to the server...
+Ack recevied for join
+client$ mem -i index_5hm8a7hz -s SRR062634.filt.fastq
+Worker allocated for [Dispatch-9] after 4sec
+Job [Dispatch-9] completed. Total time : 50sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-11] after 50sec
+Job [Dispatch-11] completed. Total time : 96sec. Processng Time : 46sec.
+Worker allocated for [Dispatch-7] after 96sec
+Job [Dispatch-7] completed. Total time : 141sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-8] after 141sec
+Job [Dispatch-8] completed. Total time : 187sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-6] after 187sec
+Job [Dispatch-6] completed. Total time : 232sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-10] after 233sec
+Job [Dispatch-10] completed. Total time : 277sec. Processng Time : 44sec.
+Worker allocated for [Dispatch-5] after 277sec
+Job [Dispatch-5] completed. Total time : 320sec. Processng Time : 43sec.
+Worker allocated for [Dispatch-4] after 320sec
+Job [Dispatch-4] completed. Total time : 363sec. Processng Time : 42sec.
+Worker allocated for [Dispatch-2] after 363sec
+Job [Dispatch-2] completed. Total time : 409sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-3] after 409sec
+Job [Dispatch-3] completed. Total time : 455sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-1] after 455sec
+Job [Dispatch-1] completed. Total time : 501sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-0] after 501sec
+Job [Dispatch-0] completed. Total time : 546sec. Processng Time : 45sec.
+Jobs group [Dispatch Group] completed in  546sec
+Job [Search-0] completed. Total time : 0sec. Processng Time : 1614878382sec.
+Command Execution Time : 546sec.
+Search failed for job s34zprl3amg759dx. MSG 404 File /data//zpxb5lzc/mread-1.fa doesn't exists
+client$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ./client client123 tcp://localhost:31920
+Connecting to the driver...
+Connected to the server...
+Ack recevied for join
+client$ mem -i index_5hm8a7hz -s SRR062634.filt.fastq
+Worker allocated for [Dispatch-8] after 22sec
+Worker allocated for [Dispatch-7] after 24sec
+Worker allocated for [Dispatch-6] after 24sec
+Worker allocated for [Dispatch-5] after 28sec
+Worker allocated for [Dispatch-3] after 30sec
+Worker allocated for [Dispatch-11] after 31sec
+Worker allocated for [Dispatch-9] after 35sec
+Worker allocated for [Dispatch-2] after 38sec
+Worker allocated for [Dispatch-10] after 38sec
+Job [Dispatch-8] completed. Total time : 71sec. Processng Time : 49sec.
+Worker allocated for [Dispatch-1] after 71sec
+Job [Dispatch-7] completed. Total time : 80sec. Processng Time : 56sec.
+Worker allocated for [Dispatch-4] after 80sec
+Job [Dispatch-6] completed. Total time : 82sec. Processng Time : 58sec.
+Worker allocated for [Dispatch-0] after 82sec
+Job [Dispatch-5] completed. Total time : 90sec. Processng Time : 61sec.
+Job [Dispatch-9] completed. Total time : 106sec. Processng Time : 70sec.
+Job [Dispatch-11] completed. Total time : 109sec. Processng Time : 78sec.
+Job [Dispatch-3] completed. Total time : 110sec. Processng Time : 79sec.
+Job [Dispatch-2] completed. Total time : 112sec. Processng Time : 74sec.
+Job [Dispatch-10] completed. Total time : 114sec. Processng Time : 75sec.
+Job [Dispatch-1] completed. Total time : 130sec. Processng Time : 58sec.
+Job [Dispatch-0] completed. Total time : 139sec. Processng Time : 57sec.
+Job [Dispatch-4] completed. Total time : 141sec. Processng Time : 61sec.
+Jobs group [Dispatch Group] completed in  141sec
+^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ./client client123 tcp://localhost:31920
+Connecting to the driver...
+Connected to the server...
+Ack recevied for join
+client$ mem -i index_5hm8a7hz -s SRR062634.filt.fastq
+Worker allocated for [Dispatch-11] after 0sec
+Worker allocated for [Dispatch-8] after 0sec
+Worker allocated for [Dispatch-5] after 0sec
+Worker allocated for [Dispatch-2] after 0sec
+Worker allocated for [Dispatch-1] after 0sec
+Worker allocated for [Dispatch-4] after 0sec
+Worker allocated for [Dispatch-3] after 0sec
+Worker allocated for [Dispatch-9] after 0sec
+Worker allocated for [Dispatch-10] after 0sec
+Job [Dispatch-10] completed. Total time : 48sec. Processng Time : 48sec.
+Worker allocated for [Dispatch-7] after 48sec
+Job [Dispatch-9] completed. Total time : 48sec. Processng Time : 48sec.
+Worker allocated for [Dispatch-6] after 48sec
+Job [Dispatch-8] completed. Total time : 51sec. Processng Time : 51sec.
+Worker allocated for [Dispatch-0] after 51sec
+Job [Dispatch-2] completed. Total time : 54sec. Processng Time : 54sec.
+Job [Dispatch-4] completed. Total time : 54sec. Processng Time : 54sec.
+Job [Dispatch-11] completed. Total time : 56sec. Processng Time : 56sec.
+Job [Dispatch-3] completed. Total time : 56sec. Processng Time : 56sec.
+Job [Dispatch-1] completed. Total time : 72sec. Processng Time : 72sec.
+Job [Dispatch-5] completed. Total time : 75sec. Processng Time : 75sec.
+Job [Dispatch-7] completed. Total time : 89sec. Processng Time : 41sec.
+Job [Dispatch-0] completed. Total time : 94sec. Processng Time : 42sec.
+Job [Dispatch-6] completed. Total time : 102sec. Processng Time : 53sec.
+Jobs group [Dispatch Group] completed in  102sec
+^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ./client client123 tcp://localhost:31920
+Connecting to the driver...
+Connected to the server...
+Ack recevied for join
+client$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ./client client123 tcp://localhost:31920
+Connecting to the driver...
+Connected to the server...
+Ack recevied for join
+client$ mem -i index_5hm8a7hz -s SRR062634.filt.fastq
+Worker allocated for [Dispatch-10] after 9sec
+Worker allocated for [Dispatch-9] after 9sec
+Worker allocated for [Dispatch-11] after 9sec
+Worker allocated for [Dispatch-8] after 9sec
+Job [Dispatch-9] completed. Total time : 51sec. Processng Time : 41sec.
+Worker allocated for [Dispatch-5] after 51sec
+Job [Dispatch-11] completed. Total time : 52sec. Processng Time : 43sec.
+Job [Dispatch-10] completed. Total time : 52sec. Processng Time : 43sec.
+Worker allocated for [Dispatch-6] after 52sec
+Worker allocated for [Dispatch-3] after 52sec
+Job [Dispatch-8] completed. Total time : 56sec. Processng Time : 46sec.
+Worker allocated for [Dispatch-2] after 56sec
+Job [Dispatch-5] completed. Total time : 93sec. Processng Time : 41sec.
+Worker allocated for [Dispatch-7] after 93sec
+Job [Dispatch-3] completed. Total time : 95sec. Processng Time : 42sec.
+Worker allocated for [Dispatch-1] after 95sec
+Job [Dispatch-6] completed. Total time : 96sec. Processng Time : 43sec.
+Worker allocated for [Dispatch-4] after 96sec
+Job [Dispatch-2] completed. Total time : 104sec. Processng Time : 47sec.
+Worker allocated for [Dispatch-0] after 104sec
+Job [Dispatch-7] completed. Total time : 134sec. Processng Time : 41sec.
+Job [Dispatch-1] completed. Total time : 138sec. Processng Time : 43sec.
+Job [Dispatch-4] completed. Total time : 139sec. Processng Time : 42sec.
+Job [Dispatch-0] completed. Total time : 156sec. Processng Time : 52sec.
+Jobs group [Dispatch Group] completed in  156sec
+^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ^C
+chathura@laptop:~/code/sgx-tasks/build/applications/genomeseq$ ./client client123 tcp://localhost:31920
+Connecting to the driver...
+Connected to the server...
+Ack recevied for join
+client$ mem -i index_5hm8a7hz -s SRR062634.filt.fastq
+Worker allocated for [Dispatch-9] after 66sec
+Worker allocated for [Dispatch-11] after 67sec
+Worker allocated for [Dispatch-8] after 67sec
+Worker allocated for [Dispatch-7] after 74sec
+Job [Dispatch-9] completed. Total time : 107sec. Processng Time : 41sec.
+Worker allocated for [Dispatch-10] after 108sec
+Job [Dispatch-8] completed. Total time : 110sec. Processng Time : 42sec.
+Worker allocated for [Dispatch-6] after 110sec
+Job [Dispatch-11] completed. Total time : 113sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-5] after 113sec
+Job [Dispatch-7] completed. Total time : 126sec. Processng Time : 52sec.
+Worker allocated for [Dispatch-4] after 126sec
+Job [Dispatch-10] completed. Total time : 151sec. Processng Time : 43sec.
+Worker allocated for [Dispatch-3] after 151sec
+Job [Dispatch-6] completed. Total time : 153sec. Processng Time : 42sec.
+Worker allocated for [Dispatch-2] after 153sec
+Job [Dispatch-5] completed. Total time : 157sec. Processng Time : 44sec.
+Worker allocated for [Dispatch-1] after 157sec
+Job [Dispatch-4] completed. Total time : 179sec. Processng Time : 52sec.
+Worker allocated for [Dispatch-0] after 179sec
+Job [Dispatch-2] completed. Total time : 196sec. Processng Time : 42sec.
+Job [Dispatch-3] completed. Total time : 199sec. Processng Time : 47sec.
+Job [Dispatch-1] completed. Total time : 208sec. Processng Time : 51sec.
+Job [Dispatch-0] completed. Total time : 231sec. Processng Time : 51sec.
+Jobs group [Dispatch Group] completed in  231sec
+Worker allocated for [Search-10] after 0sec
+Job [Search-10] completed. Total time : 0sec. Processng Time : 0sec.
+Command Execution Time : 231sec.
+Search failed for job gmqmxcckm6mzcrcp. File /data//results_d8jkvxnr/mread-11.fa doesn't exists
+client$ mem -i index_5hm8a7hz -s SRR062634.filt.fastq
+Worker allocated for [Search-8] after 0sec
+Job [Search-8] completed. Total time : 0sec. Processng Time : 0sec.
+Worker allocated for [Search-6] after 0sec
+Job [Search-6] completed. Total time : 0sec. Processng Time : 0sec.
+Worker allocated for [Search-11] after 0sec
+Job [Search-11] completed. Total time : 0sec. Processng Time : 0sec.
+Worker allocated for [Search-3] after 0sec
+Job [Search-3] completed. Total time : 0sec. Processng Time : 0sec.
+Worker allocated for [Search-5] after 0sec
+Job [Search-5] completed. Total time : 0sec. Processng Time : 0sec.
+Worker allocated for [Search-2] after 0sec
+Job [Search-2] completed. Total time : 0sec. Processng Time : 0sec.
+Worker allocated for [Search-4] after 0sec
+Job [Search-4] completed. Total time : 0sec. Processng Time : 0sec.
+Worker allocated for [Search-1] after 0sec
+Job [Search-1] completed. Total time : 0sec. Processng Time : 0sec.
+Worker allocated for [Search-7] after 0sec
+Job [Search-7] completed. Total time : 0sec. Processng Time : 0sec.
+Worker allocated for [Search-0] after 1sec
+Job [Search-0] completed. Total time : 1sec. Processng Time : 0sec.
+Worker allocated for [Search-9] after 1sec
+Job [Search-9] completed. Total time : 1sec. Processng Time : 0sec.
+Jobs group [Search Group] completed in  1sec
+Worker allocated for [Dispatch-11] after 1sec
+Worker allocated for [Dispatch-8] after 1sec
+Worker allocated for [Dispatch-6] after 1sec
+Worker allocated for [Dispatch-5] after 1sec
+Job [Dispatch-8] completed. Total time : 43sec. Processng Time : 41sec.
+Worker allocated for [Dispatch-4] after 43sec
+Job [Dispatch-11] completed. Total time : 44sec. Processng Time : 43sec.
+Worker allocated for [Dispatch-7] after 44sec
+Job [Dispatch-6] completed. Total time : 45sec. Processng Time : 43sec.
+Worker allocated for [Dispatch-3] after 45sec
+Job [Dispatch-5] completed. Total time : 47sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-2] after 47sec
+Job [Dispatch-7] completed. Total time : 86sec. Processng Time : 42sec.
+Worker allocated for [Dispatch-1] after 86sec
+Job [Dispatch-4] completed. Total time : 88sec. Processng Time : 44sec.
+Worker allocated for [Dispatch-10] after 88sec
+Job [Dispatch-3] completed. Total time : 88sec. Processng Time : 43sec.
+Worker allocated for [Dispatch-9] after 88sec
+Job [Dispatch-2] completed. Total time : 93sec. Processng Time : 45sec.
+Worker allocated for [Dispatch-0] after 93sec
+Job [Dispatch-10] completed. Total time : 129sec. Processng Time : 40sec.
+Job [Dispatch-1] completed. Total time : 129sec. Processng Time : 43sec.
+Job [Dispatch-9] completed. Total time : 133sec. Processng Time : 44sec.
+Job [Dispatch-0] completed. Total time : 138sec. Processng Time : 45sec.
+Jobs group [Dispatch Group] completed in  138sec
+Worker allocated for [Search-6] after 0sec
+Job [Search-6] completed. Total time : 1sec. Processng Time : 1sec.
+Worker allocated for [Search-4] after 2sec
+Job [Search-4] completed. Total time : 6sec. Processng Time : 4sec.
+Worker allocated for [Search-9] after 6sec
+Job [Search-9] completed. Total time : 8sec. Processng Time : 1sec.
+Worker allocated for [Search-8] after 8sec
+Job [Search-8] completed. Total time : 9sec. Processng Time : 1sec.
+Worker allocated for [Search-7] after 9sec
+Job [Search-7] completed. Total time : 11sec. Processng Time : 2sec.
+Worker allocated for [Search-5] after 11sec
+Job [Search-5] completed. Total time : 15sec. Processng Time : 4sec.
+Worker allocated for [Search-3] after 15sec
+Job [Search-3] completed. Total time : 17sec. Processng Time : 1sec.
+Worker allocated for [Search-10] after 17sec
+Job [Search-10] completed. Total time : 21sec. Processng Time : 4sec.
+Worker allocated for [Search-2] after 21sec
+Job [Search-2] completed. Total time : 23sec. Processng Time : 2sec.
+Worker allocated for [Search-1] after 23sec
+Job [Search-1] completed. Total time : 27sec. Processng Time : 3sec.
+Worker allocated for [Search-0] after 27sec
+Job [Search-0] completed. Total time : 30sec. Processng Time : 3sec.
+Worker allocated for [Search-11] after 30sec
+Job [Search-11] completed. Total time : 33sec. Processng Time : 3sec.
+Jobs group [Search Group] completed in  33sec
