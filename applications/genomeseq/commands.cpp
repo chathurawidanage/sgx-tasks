@@ -299,6 +299,9 @@ void MergeCommand::Parse(int32_t *code, std::string *msg) {
   this->aligner = results["a"].as<std::string>();
   this->mode = results["m"].as<std::string>();
 
+  spdlog::info("results dir : {}, partitions : {}, aligner : {}, mode : {}", this->results_dir,
+               this->partitions, this->aligner, this->mode);
+
   spdlog::info("Validating merge command....");
   this->Validate(code, msg);
 }
@@ -315,6 +318,7 @@ void MergeCommand::Validate(int32_t *code, std::string *msg) {
             404, "Alignment file for partition " + std::to_string(i + 1) + " doesn't exists at " +
                      (this->results_dir + "/aln-" + std::to_string(i + 1) + ".sam"));
         *code = 404;
+        return;
       }
     }
   }
