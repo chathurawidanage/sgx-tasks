@@ -102,14 +102,14 @@ void HandleIndex(
   driver->GetExecutor()->AddJob(prt_job);
 }
 
-void ScheduleMerge(std::string result_folder, std::string client_id, int32_t partitions,
+void ScheduleMerge(std::string result_id, std::string client_id, int32_t partitions,
                    std::shared_ptr<tasker::Driver> driver) {
   spdlog::info("Handling merge job...");
 
   std::string job_id = gen_random(16);
 
   std::shared_ptr<MergeJob> mrg_job =
-      std::make_shared<MergeJob>(result_folder, partitions, job_id, client_id, driver);
+      std::make_shared<MergeJob>(result_id, partitions, job_id, client_id, driver);
 
   mrg_job->OnComplete(std::make_shared<std::function<void(std::string, int32_t, std::string)>>(
       [=](std::string job_id, int32_t code, std::string msg) {

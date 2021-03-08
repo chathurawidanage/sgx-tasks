@@ -28,8 +28,8 @@ class MergeJob : public tasker::Job {
     std::string validation_msg;
     int32_t validation_code;
 
-    std::string p_cmd =
-        "mrg -r " + result_dir + " -p " + std::to_string(partitions) + " -a bwa-mem -m ord";
+    std::string p_cmd = "mrg -r " + get_root() + result_dir + " -p " + std::to_string(partitions) +
+                        " -a bwa-mem -m ord";
 
     spdlog::info("Generated merge command : {}", p_cmd);
 
