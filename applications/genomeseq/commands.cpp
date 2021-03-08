@@ -294,7 +294,7 @@ void MergeCommand::Parse(int32_t *code, std::string *msg) {
 
   auto results = options.parse(args->size(), args->data());
 
-  this->results_dir = get_root() + "/" + results["r"].as<std::string>();
+  this->results_dir = results["r"].as<std::string>();
   this->partitions = results["p"].as<int32_t>();
   this->aligner = results["a"].as<std::string>();
   this->mode = results["m"].as<std::string>();

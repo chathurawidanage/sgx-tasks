@@ -81,7 +81,7 @@ void HandleIndex(
   std::string job_id = gen_random(16);
 
   spdlog::info("Creating new index {}", index_id);
-  spdlog::info("Handling parition commnad...");
+  spdlog::info("Handling partition commnad...");
 
   std::shared_ptr<PartitionJob> prt_job =
       std::make_shared<PartitionJob>(msg, job_id, client_id, index_id, driver);
@@ -89,11 +89,11 @@ void HandleIndex(
   prt_job->OnComplete(std::make_shared<std::function<void(std::string, int32_t, std::string)>>(
       [=](std::string job_id, int32_t code, std::string msg) {
         if (code != 0) {
-          spdlog::info("Parition job {} has failed. Not scheduling indexing");
+          spdlog::info("Partition job {} has failed. Not scheduling indexing");
           // reporting the error to the client
           driver->SendToClient(client_id, tasker::GetCommand(tasker::Commands::MESSAGE), msg);
         } else {
-          // shedule indexing
+          // schedule indexing
           ScheduleIndexJobs(index_id, prt_job->GetCommand()->GetPartitions(), client_id, driver,
                             prt_job->GetCommand()->GetSrcFile(), create_index);
         }
@@ -102,13 +102,11 @@ void HandleIndex(
   driver->GetExecutor()->AddJob(prt_job);
 }
 
-void ScheduleMerge(std::string result_id, std::string client_id, int32_t partitions,
+void ScheduleMerge(std::string result_folder, std::string client_id, int32_t partitions,
                    std::shared_ptr<tasker::Driver> driver) {
   spdlog::info("Handling merge job...");
 
   std::string job_id = gen_random(16);
-
-  std::string result_folder = get_root() + "/" + result_id;
 
   std::shared_ptr<MergeJob> mrg_job =
       std::make_shared<MergeJob>(result_folder, partitions, job_id, client_id, driver);
