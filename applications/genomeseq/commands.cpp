@@ -310,9 +310,10 @@ void MergeCommand::Validate(int32_t *code, std::string *msg) {
   } else {
     // check for all the sam files
     for (size_t i = 0; i < this->GetPartitions(); i++) {
-      if (!std::filesystem::exists(this->results_dir + "/aln-" + std::to_string(i) + ".sam")) {
+      if (!std::filesystem::exists(this->results_dir + "/aln-" + std::to_string(i + 1) + ".sam")) {
         *msg = create_response(
-            404, "Alignment file for partition " + std::to_string(i) + " doesn't exists");
+            404, "Alignment file for partition " + std::to_string(i + 1) + " doesn't exists at " +
+                     (this->results_dir + "/aln-" + std::to_string(i + 1) + ".sam"));
         *code = 404;
       }
     }
